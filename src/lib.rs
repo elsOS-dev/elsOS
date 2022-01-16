@@ -12,13 +12,12 @@ pub extern "C" fn kernel_main() -> !
 	println!("Hello, kernel world !");
 	println!("Welcome to elsos");
 	println!("Some numbers: {} and {}", 42, 2.0/3.0);
-	loop
-	{}
+	loop {}
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> !
+fn panic(info: &PanicInfo) -> !
 {
-	loop
-	{}
+	println!("{}", info);
+	loop {}
 }
