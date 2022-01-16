@@ -9,7 +9,9 @@ use core::panic::PanicInfo;
 #[no_mangle]
 pub extern "C" fn kernel_main() -> !
 {
-	vga_buffer::write("Hello, elsos world !");
+	println!("Hello, kernel world !");
+	println!("Welcome to elsos");
+	println!("Some numbers: {} and {}", 42, 2.0/3.0);
 	loop
 	{}
 }
