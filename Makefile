@@ -34,7 +34,7 @@ $(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
 		-o $(kernel) $(assembly_object_files) $(rust_os)
 
 kernel:
-	cargo +nightly build --target $(target).json
+	cargo +nightly build -Zbuild-std-features=compiler-builtins-mem --target $(target).json
 
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
