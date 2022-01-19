@@ -1,9 +1,11 @@
 #![feature(abi_x86_interrupt)]
 #![feature(exclusive_range_pattern)]
 #![feature(llvm_asm)]
+#![allow(dead_code)]
 #![no_std]
 #![no_main]
 
+mod utilities;
 mod vga_buffer;
 //extern crate rlibc;
 use core::panic::PanicInfo;
@@ -15,8 +17,8 @@ pub fn inb(port: u32) -> u8
 	let ret: u8;
 	unsafe
 	{
-		//llvm_asm!("inb %%dx,%%al":"=a" (ret):"d" (port));
-		asm!("inb {}, {}", out(reg_byte) ret, in(reg) port);
+		asm!("in al, dx", out("al") ret, in("dx") port,
+				options(nomem, nostack, preserves_flags));
 	}
 	ret
 }
@@ -26,11 +28,14 @@ pub fn outb(port: u32, value: u8)
 {
 	unsafe
 	{
-		llvm_asm!("outb %%al,%%dx": :"d" (port), "a" (value));
+		asm!("out dx, al", in("dx") port, in("al") value,
+				options(nomem, nostack, preserves_flags));
 	}
 }
 
-
+const KEYBOARD_DATA: u32 = 0x60;
+const KEYBOARD_READ_STATUS: u32 = 0x64;
+const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
 
 #[no_mangle]
 pub extern "C" fn kernel_main() -> !
@@ -40,8 +45,15 @@ pub extern "C" fn kernel_main() -> !
 	println!("Some numbers: {} and {}", 42, 2.0/3.0);
 	loop
    	{
-		let scancode = inb(0x60);
-		println!("scancode: {}", scancode);
+		let scancode = inb(KEYBOARD_DATA);
+		let status =  inb(KEYBOARD_READ_STATUS);
+
+		let _buffer_status = utilities::get_bit_at(status, 0);
+
+		if scancode & 0x80 == 0
+		{
+			println!("scancode: {}", scancode);
+		}
 	}
 }
 
