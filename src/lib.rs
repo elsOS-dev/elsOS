@@ -19,7 +19,7 @@ pub extern "C" fn kernel_main() -> !
 	println!("Some numbers: {} and {}", 42, 2.0/3.0);
 
 
-	keyboard::get_scancodes();
+//	keyboard::get_scancodes();
 	loop {}
 }
 
