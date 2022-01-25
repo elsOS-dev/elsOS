@@ -11,10 +11,12 @@ mod vga_buffer;
 mod keyboard;
 
 use core::panic::PanicInfo;
+use crate::vga_buffer::init_cursor;
 
 #[no_mangle]
 pub extern "C" fn kernel_main() -> !
 {
+	init_cursor(0, 15);
 	println!("Hello, kernel world !");
 	println!("Welcome to elsos");
 	println!("Some numbers: {} and {}", 42, 2.0/3.0);
