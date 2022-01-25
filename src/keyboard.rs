@@ -28,6 +28,18 @@ const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
 const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
 
+struct KeyboardStates
+{
+    is_shift: bool,
+    is_ctrl: bool,
+}
+
+static mut keyboard_states: KeyboardStates = KeyboardStates
+{
+    is_shift: false,
+    is_ctrl: false,
+};
+
 pub fn get_scancodes()
 {
 	let mut scancode: u8 = 0;
@@ -42,7 +54,7 @@ pub fn get_scancodes()
 		scancode = new_scancode;
 		let key = match scancode
 		{
-			0x02 => Some('1'),
+			0x02 => unsafe { if keyboard_states.is_shift { Some('1') } else { Some('&') } },
 			0x03 => Some('2'),
 			0x04 => Some('3'),
 			0x05 => Some('4'),
@@ -65,7 +77,7 @@ pub fn get_scancodes()
 			0x16 => Some('u'),
 			0x17 => Some('i'),
 			0x18 => Some('o'),
-			0x19 => Some('p'),
+			0x19 => unsafe { if keyboard_states.is_shift { Some('P') } else { Some('p') } },
 			0x1A => Some('^'),
 			0x1B => Some('$'),
 			0x1C => Some('\n'),
@@ -103,10 +115,27 @@ pub fn get_scancodes()
 
 		if let Some(key) = key
 		{
-			print!("{}", key);
+            unsafe
+            {
+			    print!("{}{}{}", if keyboard_states.is_ctrl { "^" } else { "" }, key, if keyboard_states.is_ctrl { "\n" } else { "" });
+            }
 		}
 		else
 		{
+            if scancode % 0x80 == 0x2a
+            {
+                unsafe
+                {
+                    keyboard_states.is_shift = !keyboard_states.is_shift;
+                }
+            }
+            if scancode % 0x80 == 0x1d
+            {
+                unsafe
+                {
+                    keyboard_states.is_ctrl = !keyboard_states.is_ctrl;
+                }
+            }
 			if scancode & 0x80 == 0
 			{
 				println!("scancode: {:#x}", scancode);
