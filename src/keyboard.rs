@@ -11,7 +11,7 @@ struct KeyboardStates
     is_ctrl: bool,
 }
 
-static mut keyboard_states: KeyboardStates = KeyboardStates
+static mut KEYBOARD_STATES: KeyboardStates = KeyboardStates
 {
     is_shift: false,
     is_ctrl: false,
@@ -21,7 +21,7 @@ fn char_from_scancode(scancode: u8) -> Option<char>
 {
 	unsafe
 	{
-		if keyboard_states.is_shift
+		if KEYBOARD_STATES.is_shift
 		{
 			return match scancode
 			{
@@ -155,7 +155,7 @@ pub fn get_scancodes()
 		{
             unsafe
             {
-			    print!("{}{}{}", if keyboard_states.is_ctrl { "^" } else { "" }, key, if keyboard_states.is_ctrl { "\n" } else { "" });
+			    print!("{}{}{}", if KEYBOARD_STATES.is_ctrl { "^" } else { "" }, key, if KEYBOARD_STATES.is_ctrl { "\n" } else { "" });
             }
 		}
 		else
@@ -164,10 +164,10 @@ pub fn get_scancodes()
 			{
 				match scancode
 				{
-					0x2A => keyboard_states.is_shift = true,
-					0xAA => keyboard_states.is_shift = false,
-					0x1D => keyboard_states.is_ctrl = true,
-					0x9D => keyboard_states.is_ctrl = false,
+					0x2A => KEYBOARD_STATES.is_shift = true,
+					0xAA => KEYBOARD_STATES.is_shift = false,
+					0x1D => KEYBOARD_STATES.is_ctrl = true,
+					0x9D => KEYBOARD_STATES.is_ctrl = false,
 					_ => if scancode % 0x80 == 0
 					{
 						println!("scancode: {:#x}", scancode);
