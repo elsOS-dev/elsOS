@@ -1,5 +1,10 @@
 use core::arch::asm;
 
+pub fn shutdown_qemu()
+{
+	outw(0x604, 0x2000);
+}
+
 #[inline(always)]
 pub fn outw(port: u32, value: u16)
 {
