@@ -43,7 +43,7 @@ impl ColorCode
 struct ScreenChar
 {
 	character: u8,
-	color_code: ColorCode,
+	color_code: u8,
 }
 
 #[repr(transparent)]
@@ -55,8 +55,8 @@ struct Buffer
 pub struct Writer
 {
 	column_position: usize,
-	color_code: ColorCode,
-	buffer: &'static mut Buffer,
+	color_code: u8,
+	//buffer: &'static mut Buffer,
 }
 
 impl Writer
@@ -72,7 +72,7 @@ impl Writer
 		let row = BUFFER_HEIGHT - 1;
 		let col = self.column_position;
 
-		self.buffer.chars[row][col] = ScreenChar {
+		Writer::buffer().chars[row][col] = ScreenChar {
 			character: byte,
 			color_code: self.color_code,
 		};
@@ -100,7 +100,7 @@ impl Writer
 
 		for col in 0..BUFFER_WIDTH
 		{
-			self.buffer.chars[row][col] = blank;
+			Writer::buffer().chars[row][col] = blank;
 		}
 	}
 
@@ -110,8 +110,8 @@ impl Writer
 		{
 			for col in 0..BUFFER_WIDTH
 			{
-				let character = self.buffer.chars[row][col];
-				self.buffer.chars[row - 1][col] = character;
+				let character = Writer::buffer().chars[row][col];
+				Writer::buffer().chars[row - 1][col] = character;
 			}
 		}
 		self.clear_row(BUFFER_HEIGHT - 1);
@@ -128,6 +128,14 @@ impl fmt::Write for Writer
 	}
 }
 
+impl Writer
+{
+	fn buffer() -> &'static mut Buffer
+	{
+		unsafe { &mut *(0xb8000 as *mut Buffer) }
+	}
+}
+
 #[macro_export]
 macro_rules! print
 {
@@ -141,16 +149,18 @@ macro_rules! println
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+
+static mut W: Writer = Writer
+{
+	column_position: 0,
+	color_code: 0x0B,
+};
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments)
 {
     use core::fmt::Write;
-	let mut w = Writer {
-		column_position: 0,
-		color_code: ColorCode::new(Color::Yellow, Color::Black),
-		buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-	};
 
-	w.write_fmt(args).unwrap();
+	unsafe { W.write_fmt(args).unwrap(); }
 }
 
