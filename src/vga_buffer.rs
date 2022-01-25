@@ -1,3 +1,4 @@
+use crate::utilities::{inb, outb};
 use core::fmt;
 
 const BUFFER_HEIGHT: usize = 25;
@@ -63,13 +64,14 @@ impl Writer
 {
 	pub fn write_byte(&mut self, byte: u8)
 	{
+		let row = BUFFER_HEIGHT - 1;
+
 		match byte
 		{
 			b'\n' => self.new_line(),
 			0x08  => self.backspace(),
 			_ =>
 			{
-				let row = BUFFER_HEIGHT - 1;
 				let col = self.column_position;
 
 				Writer::buffer().chars[row][col] = ScreenChar {
@@ -79,6 +81,7 @@ impl Writer
 				self.column_position += 1;
 			},
 		}
+		move_cursor(self.column_position as u16, row as u16);
 	}
 
 	pub fn write_string(&mut self, s: &str)
@@ -169,7 +172,7 @@ macro_rules! println
 static mut W: Writer = Writer
 {
 	column_position: 0,
-	color_code: 0x0B,
+	color_code: Color::White as u8,
 };
 
 #[doc(hidden)]
@@ -180,3 +183,21 @@ pub fn _print(args: fmt::Arguments)
 	unsafe { W.write_fmt(args).unwrap(); }
 }
 
+pub fn init_cursor(cursor_start: u8, cursor_end: u8)
+{
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+
+	outb(0x3D4, 0x0B);
+	outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+}
+
+fn move_cursor(x: u16, y: u16)
+{
+	let pos: u16 = y * BUFFER_WIDTH as u16 + x;
+
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, pos as u8 & 0xFF);
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (pos >> 8) as u8 & 0xFF);
+}
