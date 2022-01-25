@@ -1,3 +1,4 @@
+#![feature(const_mut_refs)]
 #![feature(abi_x86_interrupt)]
 #![feature(exclusive_range_pattern)]
 #![feature(llvm_asm)]
