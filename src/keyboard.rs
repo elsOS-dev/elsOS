@@ -1,5 +1,6 @@
 use crate::println;
 use crate::print;
+use crate::utilities::shutdown_qemu;
 
 const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
@@ -21,6 +22,13 @@ fn char_from_scancode(scancode: u8) -> Option<char>
 {
 	unsafe
 	{
+		if KEYBOARD_STATES.is_ctrl
+		{
+			if scancode == 0x2E
+			{
+				shutdown_qemu();
+			}
+		}
 		if KEYBOARD_STATES.is_shift
 		{
 			return match scancode
