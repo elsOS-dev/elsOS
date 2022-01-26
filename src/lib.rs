@@ -13,14 +13,24 @@ mod keyboard;
 use core::panic::PanicInfo;
 use crate::vga_buffer::init_cursor;
 
+static VERSION: &str = "0";
+static PATCHLEVEL: &str = "0";
+static SUBLEVEL: &str = "1";
+static EXTRAVERSION: &str = "";
+
 #[no_mangle]
 pub extern "C" fn kernel_main() -> !
 {
 	init_cursor(0, 15);
+	println!("        :::      ::::::::");
+	println!("      :+:      :+:    :+:");
+	println!("    +:+ +:+         +:+  ");
+	println!("  +#+  +:+       +#+     ");
+	println!("+#+#+#+#+#+   +#+        ");
+	println!("     #+#    #+#          ");
+	println!("    ###   #########      \n\n");
 	println!("Hello, kernel world !");
-	println!("Welcome to elsos");
-	println!("Some numbers: {} and {}", 42, 2.0/3.0);
-
+	println!("Willkumme uf elsOS {}.{}.{}{}\n", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 
 	keyboard::get_scancodes();
 	loop {}
