@@ -1,10 +1,17 @@
 use crate::println;
 use crate::print;
 use crate::utilities::shutdown_qemu;
+use crate::vga_buffer::handle_arrows;
 
 const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
 const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
+
+pub enum Arrow
+{
+	Left,
+	Right
+}
 
 struct KeyboardStates
 {
@@ -176,7 +183,9 @@ pub fn get_scancodes()
 					0xAA => KEYBOARD_STATES.is_shift = false,
 					0x1D => KEYBOARD_STATES.is_ctrl = true,
 					0x9D => KEYBOARD_STATES.is_ctrl = false,
-					_ => if scancode % 0x80 == 0
+					0x4B => handle_arrows(Arrow::Left),
+					0x4D => handle_arrows(Arrow::Right),
+					_ => if scancode & 0x80 == 0
 					{
 						println!("scancode: {:#x}", scancode);
 					}
