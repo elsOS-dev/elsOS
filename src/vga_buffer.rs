@@ -1,4 +1,5 @@
 use crate::utilities::{inb, outb};
+use crate::keyboard::Arrow;
 use core::fmt;
 
 const BUFFER_HEIGHT: usize = 25;
@@ -211,4 +212,19 @@ fn move_cursor(x: u16, y: u16)
 	outb(CRT_DATA_REG, pos as u8 & 0xFF);
 	outb(CRT_ADDR_REG, CURSOR_HIGH_REG);
 	outb(CRT_DATA_REG, (pos >> 8) as u8 & 0xFF);
+}
+
+pub fn handle_arrows(arrow: Arrow)
+{
+	let row = BUFFER_HEIGHT - 1;
+
+	unsafe
+	{
+		match arrow
+		{
+			Arrow::Left => W.column_position -= 1,
+			Arrow::Right => W.column_position += 1,
+		};
+		move_cursor(W.column_position as u16, row as u16);
+	}
 }
