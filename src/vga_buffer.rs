@@ -33,7 +33,7 @@ struct ColorCode(u8);
 
 impl ColorCode
 {
-	fn new(foreground: Color, background: Color) -> ColorCode
+	const fn new(foreground: Color, background: Color) -> ColorCode
 	{
 		ColorCode((background as u8) << 4 | (foreground as u8))
 	}
@@ -44,7 +44,7 @@ impl ColorCode
 struct ScreenChar
 {
 	character: u8,
-	color_code: u8,
+	color_code: ColorCode,
 }
 
 #[repr(transparent)]
@@ -56,8 +56,7 @@ struct Buffer
 pub struct Writer
 {
 	column_position: usize,
-	color_code: u8,
-	//buffer: &'static mut Buffer,
+	color_code: ColorCode,
 }
 
 impl Writer
@@ -175,7 +174,7 @@ macro_rules! println
 static mut W: Writer = Writer
 {
 	column_position: 0,
-	color_code: Color::White as u8,
+	color_code: ColorCode::new(Color::White, Color::Blue),
 };
 
 #[doc(hidden)]
