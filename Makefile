@@ -56,3 +56,7 @@ clean:
 	@rm -rf build
 	@rm -f libc.a
 	make -C src/libc clean
+
+mrproper: clean
+	cargo clean
+
