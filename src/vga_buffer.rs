@@ -187,21 +187,30 @@ pub fn _print(args: fmt::Arguments)
 	unsafe { W.write_fmt(args).unwrap(); }
 }
 
+const CRT_ADDR_REG: u32 = 0x3D4;
+const CRT_DATA_REG: u32 = 0x3D5;
+
+const CURSOR_START_REG: u8 = 0x0A;
+const CURSOR_END_REG: u8 = 0x0B;
+
+const CURSOR_HIGH_REG: u8 = 0x0E;
+const CURSOR_LOW_REG: u8 = 0x0F;
+
 pub fn init_cursor(cursor_start: u8, cursor_end: u8)
 {
-	outb(0x3D4, 0x0A);
-	outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+	outb(CRT_ADDR_REG, CURSOR_START_REG);
+	outb(CRT_DATA_REG, (inb(CRT_DATA_REG) & 0xC0) | cursor_start);
 
-	outb(0x3D4, 0x0B);
-	outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+	outb(CRT_ADDR_REG, CURSOR_END_REG);
+	outb(CRT_DATA_REG, (inb(CRT_DATA_REG) & 0xE0) | cursor_end);
 }
 
 fn move_cursor(x: u16, y: u16)
 {
 	let pos: u16 = y * BUFFER_WIDTH as u16 + x;
 
-	outb(0x3D4, 0x0F);
-	outb(0x3D5, pos as u8 & 0xFF);
-	outb(0x3D4, 0x0E);
-	outb(0x3D5, (pos >> 8) as u8 & 0xFF);
+	outb(CRT_ADDR_REG, CURSOR_LOW_REG);
+	outb(CRT_DATA_REG, pos as u8 & 0xFF);
+	outb(CRT_ADDR_REG, CURSOR_HIGH_REG);
+	outb(CRT_DATA_REG, (pos >> 8) as u8 & 0xFF);
 }
