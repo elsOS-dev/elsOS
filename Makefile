@@ -4,6 +4,14 @@ iso := build/elsos-$(arch).iso
 target ?= $(arch)-elsos
 rust_os := target/$(target)/debug/libelsos.a
 
+LD=$(HOME)/opt/cross/bin/i686-elf-ld
+CC=$(HOME)/opt/cross/bin/i686-elf-gcc
+
+CFLAGS=-m32 -std=gnu99 -ffreestanding -Wall -Wextra -c
+
+export CFLAGS
+export CC
+
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
 assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
@@ -13,9 +21,6 @@ assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
 .PHONY: all clean run iso kernel
 
 all: $(kernel)
-
-clean:
-	@rm -r build
 
 run: $(iso)
 	@qemu-system-x86_64 $(iso)
@@ -29,15 +34,25 @@ $(iso): $(kernel) $(grub_cfg)
 	@grub-mkrescue -o $(iso) build/iso 2> /dev/null
 	@rm -r build/iso
 
+libc: libc.a
+
+libc.a:
+	@make -C src/libc
+	@cp src/libc/libc.a .
+
 $(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
-	@$(HOME)/opt/cross/bin/i686-elf-ld -n --gc-sections -T $(linker_script) 	\
+	$(LD) -n --gc-sections -T $(linker_script) 	\
 		-o $(kernel) $(assembly_object_files) $(rust_os)
 
-kernel:
-	cargo +nightly build -Zbuild-std-features=compiler-builtins-mem --target $(target).json
+kernel: libc
+	cargo +nightly build --target $(target).json
 
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
 	@nasm -f elf32 $< -o $@
 
+clean:
+	@rm -rf build
+	@rm -f libc.a
+	make -C src/libc clean
