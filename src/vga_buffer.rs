@@ -209,9 +209,9 @@ fn move_cursor(x: u16, y: u16)
 	let pos: u16 = y * BUFFER_WIDTH as u16 + x;
 
 	outb(CRT_ADDR_REG, CURSOR_LOW_REG);
-	outb(CRT_DATA_REG, pos as u8 & 0xFF);
+	outb(CRT_DATA_REG, pos as u8);
 	outb(CRT_ADDR_REG, CURSOR_HIGH_REG);
-	outb(CRT_DATA_REG, (pos >> 8) as u8 & 0xFF);
+	outb(CRT_DATA_REG, (pos >> 8) as u8);
 }
 
 pub fn handle_arrows(arrow: Arrow)
