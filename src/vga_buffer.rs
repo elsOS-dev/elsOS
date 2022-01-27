@@ -101,15 +101,9 @@ impl Writer
 	}
 	fn clear_row(&mut self, row: usize)
 	{
-		let blank = ScreenChar
-		{
-            character: b' ',
-            color_code: self.color_code,
-        };
-
 		for col in 0..BUFFER_WIDTH
 		{
-			Writer::buffer().chars[row][col] = blank;
+			Writer::buffer().chars[row][col] = self.blank();
 		}
 	}
 
@@ -126,19 +120,24 @@ impl Writer
 		self.clear_row(BUFFER_HEIGHT - 1);
 		self.column_position = 0;
 	}
+
 	fn backspace(&mut self)
 	{
 		if self.column_position > 0
 		{
-			let blank = ScreenChar
-			{
-				character: b' ',
-				color_code: self.color_code,
-			};
-
 			self.column_position -= 1;
-			Writer::buffer().chars[BUFFER_HEIGHT - 1][self.column_position] = blank;
+			Writer::buffer().chars[BUFFER_HEIGHT - 1][self.column_position] = self.blank();
 		}
+	}
+
+	fn blank(&self) -> ScreenChar
+	{
+		let blank = ScreenChar
+		{
+			character: b' ',
+			color_code: self.color_code,
+		};
+		blank
 	}
 }
 
