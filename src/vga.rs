@@ -5,6 +5,9 @@ use core::fmt;
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
+const ESCAPE_START: u8 = 0x1B;
+const ESCAPE_END: u8 = 0x6D;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -38,7 +41,24 @@ impl ColorCode
 	{
 		ColorCode((background as u8) << 4 | (foreground as u8))
 	}
+
+	const fn new_i(foreground: u8, background: u8) -> ColorCode
+	{
+		ColorCode((background << 4) | foreground)
+	}
+
+	pub fn fg(self) -> u8
+	{
+		self.0 & 0xf
+	}
+
+	pub fn bg(self) -> u8
+	{
+		self.0 >> 4
+	}
 }
+
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
@@ -54,8 +74,16 @@ struct Buffer
 	chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
+struct Escaper
+{
+	foreground: bool, // first number is 3
+	background: bool, // first number is 4
+}
+
 pub struct Writer
 {
+	cmd: Escaper,
+	is_command: bool,
 	column_position: usize,
 	color_code: ColorCode,
 }
@@ -64,6 +92,11 @@ impl Writer
 {
 	pub fn write_byte(&mut self, byte: u8)
 	{
+		if self.is_command == true
+		{
+			self.escape(byte);
+			return;
+		}
 		let row = BUFFER_HEIGHT - 1;
 
 		if self.column_position >= BUFFER_WIDTH && byte != b'\n'
@@ -74,6 +107,7 @@ impl Writer
 		{
 			b'\n' => self.new_line(),
 			0x08  => self.backspace(),
+			ESCAPE_START  => self.is_command = true,
 			_ =>
 			{
 				let col = self.column_position;
@@ -88,13 +122,68 @@ impl Writer
 		move_cursor(self.column_position as u16, row as u16);
 	}
 
+	fn default_color(&self) -> Color
+	{
+		if self.cmd.foreground
+		{
+			return Color::White;
+		}
+		else
+		{
+			return Color::Blue;
+		}
+	}
+
+	fn escape(&mut self, byte: u8)
+	{
+		if (byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a)
+		{
+			self.is_command = false;
+			self.cmd.foreground = false;
+			self.cmd.background = false;
+			return;
+		}
+		if self.cmd.foreground || self.cmd.background
+		{
+			let color = match byte
+			{
+				b'0' => Color::Black,
+				b'1' => Color::Red,
+				b'2' => Color::Green,
+				b'3' => Color::Brown,
+				b'4' => Color::Blue,
+				b'5' => Color::Magenta,
+				b'6' => Color::Cyan,
+				b'7' => Color::White,
+				_ => self.default_color(),
+			};
+			if self.cmd.foreground
+			{
+				self.color_code = ColorCode::new_i(color as u8, self.color_code.bg());
+			}
+			else if self.cmd.background
+			{
+				self.color_code = ColorCode::new_i(self.color_code.fg(), color as u8);
+			}
+		}
+		else
+		{
+			match byte
+			{
+				b'3' => self.cmd.foreground = true,
+				b'4' => self.cmd.background = true,
+				_ => {},
+			}
+		}
+	}
+
 	pub fn write_string(&mut self, s: &str)
 	{
 		for byte in s.bytes()
 		{
 			match byte
 			{
-				0x20..0x7e | b'\n' | 0x08 => self.write_byte(byte),
+				0x00..0xfd => self.write_byte(byte),
 				_ => self.write_byte(0xfe),
 			}
 		}
@@ -160,6 +249,8 @@ impl Writer
 
 static mut W: Writer = Writer
 {
+	cmd: Escaper {foreground: false, background: false},
+	is_command: false,
 	column_position: 0,
 	color_code: ColorCode::new(Color::White, Color::Blue),
 };
