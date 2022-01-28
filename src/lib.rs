@@ -33,6 +33,7 @@ pub extern "C" fn kernel_main() -> !
 	println!("Hello, kernel world !");
 	println!("Willkumme uf elsOS {}.{}.{}{}\n", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 
+	print!("\x1B41m\x1B32mHenlo\x1B38m\x1B48m");
 	keyboard::get_scancodes();
 	loop {}
 }
