@@ -7,11 +7,12 @@
 #![no_main]
 
 mod utilities;
-mod vga_buffer;
+mod vga;
 mod keyboard;
+mod terminal;
 
 use core::panic::PanicInfo;
-use crate::vga_buffer::init_cursor;
+use crate::vga::init_cursor;
 
 static VERSION: &str = "0";
 static PATCHLEVEL: &str = "0";
