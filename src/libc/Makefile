@@ -1,5 +1,5 @@
 NAME=libc.a
-SRC=memset.c memmove.c memcpy.c
+SRC=memset.c memmove.c memcpy.c memcmp.c
 OBJ=${SRC:.c=.o}
 AR=ar
 ARFLAGS=rcs
