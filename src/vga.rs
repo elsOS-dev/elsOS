@@ -208,7 +208,7 @@ pub fn handle_arrows(arrow: Arrow)
 	{
 		match arrow
 		{
-			Arrow::Left => W.column_position -= 1,
+			Arrow::Left => W.column_position -= if W.column_position > 0 { 1 } else { 0 },
 			Arrow::Right => W.column_position += 1,
 		};
 		move_cursor(W.column_position as u16, row as u16);
