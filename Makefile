@@ -1,5 +1,5 @@
 arch ?= i686
-kernel := build/kernel-$(arch).bin
+kernel := build/elsos-$(arch).bin
 iso := build/elsos-$(arch).iso
 target ?= $(arch)-elsos
 rust_os := target/$(target)/debug/libelsos.a
@@ -29,7 +29,7 @@ iso: $(iso)
 
 $(iso): $(kernel) $(grub_cfg)
 	@mkdir -p build/iso/boot/grub
-	@cp $(kernel) build/iso/boot/kernel.bin
+	@cp $(kernel) build/iso/boot/elsos.bin
 	@cp $(grub_cfg) build/iso/boot/grub
 	@grub-mkrescue -o $(iso) build/iso 2> /dev/null
 	@rm -r build/iso
