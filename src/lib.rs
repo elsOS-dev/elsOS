@@ -1,7 +1,6 @@
 #![feature(const_mut_refs)]
 #![feature(abi_x86_interrupt)]
 #![feature(exclusive_range_pattern)]
-#![feature(llvm_asm)]
 #![allow(dead_code)]
 #![no_std]
 #![no_main]
