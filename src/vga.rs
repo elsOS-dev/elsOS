@@ -78,6 +78,7 @@ struct Escaper
 {
 	foreground: bool, // first number is 3
 	background: bool, // first number is 4
+	color: ColorCode,
 }
 
 pub struct Writer
@@ -143,7 +144,7 @@ impl Writer
 			self.cmd.background = false;
 			return;
 		}
-		if self.cmd.foreground || self.cmd.background
+		if self.cmd.foreground ^ self.cmd.background
 		{
 			let color = match byte
 			{
@@ -159,14 +160,18 @@ impl Writer
 			};
 			if self.cmd.foreground
 			{
+				self.cmd.color = self.color_code;
 				self.color_code = ColorCode::new_i(color as u8, self.color_code.bg());
+				self.cmd.background = true;
 			}
 			else if self.cmd.background
 			{
+				self.cmd.color = self.color_code;
 				self.color_code = ColorCode::new_i(self.color_code.fg(), color as u8);
+				self.cmd.foreground = true;
 			}
 		}
-		else
+		else if !self.cmd.foreground && !self.cmd.background
 		{
 			match byte
 			{
@@ -174,6 +179,10 @@ impl Writer
 				b'4' => self.cmd.background = true,
 				_ => {},
 			}
+		}
+		else
+		{
+			self.color_code = self.cmd.color;
 		}
 	}
 
@@ -246,13 +255,14 @@ impl Writer
 		unsafe { &mut *(0xb8000 as *mut Buffer) }
 	}
 }
+const DEFAULT_COLOR: ColorCode = ColorCode::new(Color::White, Color::Blue);
 
 static mut W: Writer = Writer
 {
-	cmd: Escaper {foreground: false, background: false},
+cmd: Escaper {foreground: false, background: false, color: DEFAULT_COLOR},
 	is_command: false,
 	column_position: 0,
-	color_code: ColorCode::new(Color::White, Color::Blue),
+	color_code: DEFAULT_COLOR,
 };
 
 #[doc(hidden)]
