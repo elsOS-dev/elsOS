@@ -144,6 +144,12 @@ impl Writer
 			self.cmd.background = false;
 			return;
 		}
+		if byte == b';'
+		{
+			self.cmd.foreground = false;
+			self.cmd.background = false;
+			return ;
+		}
 		if self.cmd.foreground ^ self.cmd.background
 		{
 			let color = match byte
