@@ -11,7 +11,7 @@ mod keyboard;
 mod terminal;
 
 use core::panic::PanicInfo;
-use crate::vga::init_cursor;
+use crate::vga::cursor::init_cursor;
 
 static VERSION: &str = "0";
 static PATCHLEVEL: &str = "0";
