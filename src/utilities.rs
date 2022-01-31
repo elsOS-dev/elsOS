@@ -1,4 +1,5 @@
 use core::arch::asm;
+use core::slice;
 
 pub fn shutdown_qemu()
 {
@@ -44,5 +45,22 @@ pub fn get_bit_at(input: u8, n: u8) -> bool
         return input & (1 << n) != 0;
 	}
 	false
+}
+
+pub unsafe fn strlen(str: *const u8) -> usize
+{
+	let mut i = 0;
+
+	while *str.add(i) != 0
+	{
+		i += 1;
+	}
+
+	i
+}
+
+pub unsafe fn from_c_str(ptr: *const u8) -> &'static [u8]
+{
+	slice::from_raw_parts(ptr, strlen(ptr) + 1)
 }
 
