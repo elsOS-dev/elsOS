@@ -1,5 +1,5 @@
 use crate::keyboard;
-use crate::vga::handle_arrows;
+use crate::vga::cursor::handle_arrows;
 use crate::utilities::shutdown_qemu;
 
 #[macro_export]
