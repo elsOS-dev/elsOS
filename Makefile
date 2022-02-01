@@ -23,7 +23,7 @@ assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
 all: $(kernel)
 
 run: $(iso)
-	@qemu-system-x86_64 $(iso)
+	@qemu-system-x86_64 -drive format=raw,file=$(iso)
 
 iso: $(iso)
 
