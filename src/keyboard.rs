@@ -1,4 +1,5 @@
 use crate::terminal;
+use crate::utilities;
 
 const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
@@ -33,7 +34,7 @@ pub fn get_scancodes()
 	let mut scancode: u8 = 0;
 	loop
     {
-		let new_scancode = crate::utilities::inb(KEYBOARD_DATA);
+		let new_scancode = utilities::inb(KEYBOARD_DATA);
 
 		if new_scancode == scancode
 		{
