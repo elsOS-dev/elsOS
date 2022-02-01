@@ -9,23 +9,22 @@ pub struct Escaper
 	pub color: ColorCode,
 }
 
-impl Writer // Escaper related stuff
+impl Writer //color escape commands
 {
-	pub fn escape(&mut self, byte: u8)
+	fn default_color(&self) -> Color
 	{
-		if (byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a)
+		if self.cmd.foreground
 		{
-			self.is_command = false;
-			self.cmd.foreground = false;
-			self.cmd.background = false;
-			return;
+			return Color::White;
 		}
-		if byte == b';'
+		else
 		{
-			self.cmd.foreground = false;
-			self.cmd.background = false;
-			return ;
+			return Color::Blue;
 		}
+	}
+
+	fn colors(&mut self, byte: u8)
+	{
 		if self.cmd.foreground ^ self.cmd.background
 		{
 			let color = match byte
@@ -62,18 +61,36 @@ impl Writer // Escaper related stuff
 				_ => {},
 			}
 		}
-	}
-
-	fn default_color(&self) -> Color
-	{
-		if self.cmd.foreground
-		{
-			return Color::White;
-		}
 		else
 		{
-			return Color::Blue;
+			self.color_code = self.cmd.color;
 		}
+	}
+}
+
+impl Writer // Escaper related stuff
+{
+	fn escape_off(&mut self)
+	{
+		self.cmd.foreground = false;
+		self.cmd.background = false;
+	}
+
+	fn cmd_off(&mut self)
+	{
+		self.is_command = false;
+		self.escape_off();
+	}
+
+	pub fn escape(&mut self, byte: u8)
+	{
+		match byte
+		{
+			b'a'..b'z' | b'A'..b'Z' => self.cmd_off(),
+			b';' => { self.escape_off(); return; },
+			_ => {},
+		}
+		self.colors(byte);
 	}
 }
 
