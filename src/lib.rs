@@ -9,7 +9,7 @@ mod boot;
 mod utilities;
 mod vga;
 mod keyboard;
-mod terminal;
+mod tty;
 mod multiboot;
 
 use core::panic::PanicInfo;
