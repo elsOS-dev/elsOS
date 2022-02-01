@@ -1,4 +1,4 @@
-use crate::terminal;
+use crate::tty;
 use crate::utilities;
 
 const KEYBOARD_DATA: u32 = 0x60;
@@ -51,7 +51,7 @@ pub fn get_scancodes()
 				0x1D => KEYBOARD_STATE.ctrl = true,
 				0x9D => KEYBOARD_STATE.ctrl = false,
 				_ => {
-					terminal::input(&KeyboardInput {
+					tty::input(&KeyboardInput {
 						state: KeyboardState {
 							shift: KEYBOARD_STATE.shift,
 							ctrl: KEYBOARD_STATE.ctrl
