@@ -34,6 +34,7 @@ struct Tty
 	chars: [[vga::ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
 	pos_x: usize,
 	pos_y: usize,
+	offset_y: usize,
 	has_overflown: bool
 }
 
@@ -49,10 +50,10 @@ impl Tty
 				{
 					let src_row = match self.has_overflown
 					{
-						true => (self.pos_y as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1).rem_euclid(BUFFER_HEIGHT as isize) as usize,
+						true => (self.pos_y as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - self.offset_y as isize).rem_euclid(BUFFER_HEIGHT as isize) as usize,
 						false => if self.pos_y >= vga::BUFFER_HEIGHT
 							{
-								row + self.pos_y - vga::BUFFER_HEIGHT + 1
+								(self.pos_y as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - self.offset_y as isize).rem_euclid(BUFFER_HEIGHT as isize) as usize
 							}
 							else
 							{
@@ -62,7 +63,15 @@ impl Tty
 					(*VGA).chars[row][col] = self.chars[src_row % BUFFER_HEIGHT][col]
 				}
 			}
-			self.move_cursor();
+			if TTYS[CURRENT_TTY].offset_y > 0
+			{
+				vga::cursor::disable()
+			}
+			else
+			{
+				vga::cursor::init(0, 15);
+				self.move_cursor();
+			}
 		}
 	}
 
@@ -92,6 +101,7 @@ static mut TTYS: [Tty; 1] =
 		chars: [[vga::ScreenChar::blank(); BUFFER_WIDTH]; BUFFER_HEIGHT],
 		pos_x: 0,
 		pos_y: 0,
+		offset_y: 0,
 		has_overflown: false
 	}
 ];
@@ -237,8 +247,12 @@ cmd: Escaper {foreground: false, background: false, color: ColorCode::default()}
 pub fn _print(args: fmt::Arguments)
 {
     use core::fmt::Write;
-
-	unsafe { W.write_fmt(args).unwrap(); }
+    unsafe
+	{
+		W.write_fmt(args).unwrap();
+		TTYS[CURRENT_TTY].offset_y = 0;
+		TTYS[CURRENT_TTY].print_to_vga();
+	}
 }
 
 fn char_from_input(keyboard_input: &keyboard::KeyboardInput) -> Option<char>
@@ -379,13 +393,14 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 			0x01 => print!("\x1B"),
 			0x4B => handle_arrows(keyboard::Arrow::Left),
 			0x4D => handle_arrows(keyboard::Arrow::Right),
+			0x48 => handle_arrows(keyboard::Arrow::Up),
+			0x50 => handle_arrows(keyboard::Arrow::Down),
 			_ => if keyboard_input.scancode & 0x80 == 0
 				{
 					println!("scancode: {:#x}", keyboard_input.scancode);
 				}
 		};
 	}
-	unsafe { TTYS[CURRENT_TTY].print_to_vga(); }
 }
 
 fn handle_arrows(arrow: keyboard::Arrow)
@@ -396,7 +411,13 @@ fn handle_arrows(arrow: keyboard::Arrow)
 		{
 			keyboard::Arrow::Left => TTYS[CURRENT_TTY].pos_x -= if TTYS[CURRENT_TTY].pos_x > 0 { 1 } else { 0 },
 			keyboard::Arrow::Right => TTYS[CURRENT_TTY].pos_x += 1,
+			keyboard::Arrow::Up => TTYS[CURRENT_TTY].offset_y += if TTYS[CURRENT_TTY].offset_y < (if TTYS[CURRENT_TTY].has_overflown { BUFFER_HEIGHT } else { (TTYS[CURRENT_TTY].pos_y as isize - vga::BUFFER_HEIGHT as isize as isize + 1).rem_euclid(BUFFER_HEIGHT as isize) as usize }) { 1 } else { 0 },
+			keyboard::Arrow::Down => TTYS[CURRENT_TTY].offset_y -= if TTYS[CURRENT_TTY].offset_y > 0 { 1 } else { 0 },
 		};
-		TTYS[CURRENT_TTY].move_cursor();
+		match arrow
+		{
+			keyboard::Arrow::Left | keyboard::Arrow::Right => TTYS[CURRENT_TTY].move_cursor(),
+			keyboard::Arrow::Up | keyboard::Arrow::Down => TTYS[CURRENT_TTY].print_to_vga()
+		};
 	}
 }
