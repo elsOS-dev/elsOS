@@ -28,6 +28,7 @@ const BUFFER_WIDTH: usize = vga::BUFFER_WIDTH;
 
 static mut VGA: *mut Tty = 0xb8000 as *mut Tty;
 
+#[derive(Copy, Clone)]
 #[repr(C)]
 struct Tty
 {
@@ -94,7 +95,7 @@ impl Tty
 }
 
 static mut CURRENT_TTY: usize = 0;
-static mut TTYS: [Tty; 1] =
+static mut TTYS: [Tty; 8] =
 [
 	Tty
 	{
@@ -103,7 +104,7 @@ static mut TTYS: [Tty; 1] =
 		pos_y: 0,
 		offset_y: 0,
 		has_overflown: false
-	}
+	}; 8
 ];
 
 pub struct Writer
@@ -395,6 +396,7 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 			0x4D => handle_arrows(keyboard::Arrow::Right),
 			0x48 => handle_arrows(keyboard::Arrow::Up),
 			0x50 => handle_arrows(keyboard::Arrow::Down),
+			0x3B..=0x42 => handle_tty_change((keyboard_input.scancode - 0x3B).into()),
 			_ => if keyboard_input.scancode & 0x80 == 0
 				{
 					println!("scancode: {:#x}", keyboard_input.scancode);
@@ -419,5 +421,14 @@ fn handle_arrows(arrow: keyboard::Arrow)
 			keyboard::Arrow::Left | keyboard::Arrow::Right => TTYS[CURRENT_TTY].move_cursor(),
 			keyboard::Arrow::Up | keyboard::Arrow::Down => TTYS[CURRENT_TTY].print_to_vga()
 		};
+	}
+}
+
+fn handle_tty_change(tty: usize)
+{
+	unsafe
+	{
+		CURRENT_TTY = tty;
+		TTYS[CURRENT_TTY].print_to_vga();
 	}
 }
