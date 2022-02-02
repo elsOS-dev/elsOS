@@ -13,7 +13,6 @@ mod tty;
 mod multiboot;
 
 use core::panic::PanicInfo;
-use crate::vga::cursor::init_cursor;
 
 static VERSION: &str = "0";
 static PATCHLEVEL: &str = "0";
@@ -23,7 +22,7 @@ static EXTRAVERSION: &str = "";
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32) -> !
 {
-	init_cursor(0, 15);
+	vga::cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
 		println!("\n");

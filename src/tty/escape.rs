@@ -1,6 +1,6 @@
-use crate::vga::Writer;
-use crate::vga::Color;
-use crate::vga::ColorCode;
+use crate::tty::Writer;
+use crate::vga::colors::Color;
+use crate::vga::colors::ColorCode;
 
 pub struct Escaper
 {
@@ -93,4 +93,3 @@ impl Writer // Escaper related stuff
 		self.colors(byte);
 	}
 }
-
