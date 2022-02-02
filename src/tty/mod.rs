@@ -39,8 +39,26 @@ struct Tty
 	has_overflown: bool
 }
 
+fn rem(pos: usize, row: usize, offset: usize) -> usize
+{
+	(pos as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - offset as isize
+	).rem_euclid(BUFFER_HEIGHT as isize) as usize
+}
+
 impl Tty
 {
+	fn no_overflow(&self, row: usize) -> usize
+	{
+		if self.pos_y >= vga::BUFFER_HEIGHT
+		{
+			rem(self.pos_y, row, self.offset_y)
+		}
+		else
+		{
+			row
+		}
+	}
+
 	fn print_to_vga(&self)
 	{
 		unsafe
@@ -51,15 +69,8 @@ impl Tty
 				{
 					let src_row = match self.has_overflown
 					{
-						true => (self.pos_y as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - self.offset_y as isize).rem_euclid(BUFFER_HEIGHT as isize) as usize,
-						false => if self.pos_y >= vga::BUFFER_HEIGHT
-							{
-								(self.pos_y as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - self.offset_y as isize).rem_euclid(BUFFER_HEIGHT as isize) as usize
-							}
-							else
-							{
-								row
-							}
+						true => rem(self.pos_y, row, self.offset_y),
+						false => self.no_overflow(row),
 					};
 					(*VGA).chars[row][col] = self.chars[src_row % BUFFER_HEIGHT][col]
 				}
@@ -385,17 +396,19 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 {
 	if let Some(key) = char_from_input(keyboard_input)
 	{
-		print!("{}{}{}", if keyboard_input.state.ctrl { "^" } else { "" }, key, if keyboard_input.state.ctrl { "\n" } else { "" });
+		let key_1 = if keyboard_input.state.ctrl { "^" } else { "" };
+		let key_2 = if keyboard_input.state.ctrl { "\n" } else { "" };
+		print!("{}{}{}",key_1, key, key_2);
 	}
 	else
 	{
 		match keyboard_input.scancode
 		{
 			0x01 => print!("\x1B"),
-			0x4B => handle_arrows(keyboard::Arrow::Left),
-			0x4D => handle_arrows(keyboard::Arrow::Right),
-			0x48 => handle_arrows(keyboard::Arrow::Up),
-			0x50 => handle_arrows(keyboard::Arrow::Down),
+			0x4B => cursor_left(),
+			0x4D => cursor_right(),
+			0x48 => cursor_up(),
+			0x50 => cursor_down(),
 			0x3B..=0x42 => handle_tty_change((keyboard_input.scancode - 0x3B).into()),
 			_ => if keyboard_input.scancode & 0x80 == 0
 				{
@@ -405,22 +418,56 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 	}
 }
 
-fn handle_arrows(arrow: keyboard::Arrow)
+fn cursor_left()
 {
 	unsafe
 	{
-		match arrow
+		if TTYS[CURRENT_TTY].pos_x > 0
 		{
-			keyboard::Arrow::Left => TTYS[CURRENT_TTY].pos_x -= if TTYS[CURRENT_TTY].pos_x > 0 { 1 } else { 0 },
-			keyboard::Arrow::Right => TTYS[CURRENT_TTY].pos_x += 1,
-			keyboard::Arrow::Up => TTYS[CURRENT_TTY].offset_y += if TTYS[CURRENT_TTY].offset_y < (if TTYS[CURRENT_TTY].has_overflown { BUFFER_HEIGHT } else { (TTYS[CURRENT_TTY].pos_y as isize - vga::BUFFER_HEIGHT as isize as isize + 1).rem_euclid(BUFFER_HEIGHT as isize) as usize }) { 1 } else { 0 },
-			keyboard::Arrow::Down => TTYS[CURRENT_TTY].offset_y -= if TTYS[CURRENT_TTY].offset_y > 0 { 1 } else { 0 },
-		};
-		match arrow
+			TTYS[CURRENT_TTY].pos_x -= 1;
+	   	}
+		TTYS[CURRENT_TTY].move_cursor();
+	}
+}
+
+fn cursor_right()
+{
+	unsafe
+	{
+		TTYS[CURRENT_TTY].pos_x += 1;
+		TTYS[CURRENT_TTY].move_cursor();
+	}
+}
+
+fn cursor_up()
+{
+	unsafe
+	{
+		let tmp = if TTYS[CURRENT_TTY].has_overflown
 		{
-			keyboard::Arrow::Left | keyboard::Arrow::Right => TTYS[CURRENT_TTY].move_cursor(),
-			keyboard::Arrow::Up | keyboard::Arrow::Down => TTYS[CURRENT_TTY].print_to_vga()
+			BUFFER_HEIGHT
+		}
+		else
+		{
+			rem(TTYS[CURRENT_TTY].pos_y, 0, 0)
 		};
+		if TTYS[CURRENT_TTY].offset_y < tmp
+		{
+			TTYS[CURRENT_TTY].offset_y += 1;
+		}
+		TTYS[CURRENT_TTY].print_to_vga();
+	}
+}
+
+fn cursor_down()
+{
+	unsafe
+	{
+		if TTYS[CURRENT_TTY].offset_y > 0
+		{
+			TTYS[CURRENT_TTY].offset_y -= 1;
+		}
+		TTYS[CURRENT_TTY].print_to_vga();
 	}
 }
 
