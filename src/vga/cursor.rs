@@ -19,6 +19,12 @@ pub fn init(cursor_start: u8, cursor_end: u8)
 	outb(CRT_DATA_REG, (inb(CRT_DATA_REG) & 0xE0) | cursor_end);
 }
 
+pub fn disable()
+{
+	outb(CRT_ADDR_REG, 0x0A);
+	outb(CRT_DATA_REG, 0x20);
+}
+
 pub fn move_to(x: u16, y: u16)
 {
 	let pos: u16 = y * BUFFER_WIDTH as u16 + x;

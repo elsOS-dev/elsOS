@@ -8,7 +8,9 @@ const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
 pub enum Arrow
 {
 	Left,
-	Right
+	Right,
+	Up,
+	Down
 }
 
 pub struct KeyboardInput
