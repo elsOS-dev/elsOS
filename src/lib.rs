@@ -26,13 +26,13 @@ pub extern "C" fn kernel_main(magic: u32, address: u32) -> !
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
 		println!("\n");
-		println!("        :::      ::::::::");
-		println!("      :+:      :+:    :+:");
-		println!("    +:+ +:+         +:+       Hello, kernel world !");
-		println!("  +#+  +:+       +#+     ");
-		println!("+#+#+#+#+#+   +#+             Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
-		println!("     #+#    #+#          ");
-		println!("    ###   #########      ");
+		println!("        :::      ::::::::     __ _  ____  ____  ");
+		println!("      :+:      :+:    :+:    (  / )(  __)/ ___) ");
+		println!("    +:+ +:+         +:+      |   ( |  _) \\___ \\ ");
+		println!("  +#+  +:+       +#+         (__\\_)(__)  (____/ ");
+		println!("+#+#+#+#+#+   +#+           ");
+		println!("     #+#    #+#              Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
+		println!("    ###   #########          Hello, kernel world !");
 
 		print!("\x1B41;32mHenlo\x1B38;48m");
 		keyboard::get_scancodes();
