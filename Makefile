@@ -1,3 +1,10 @@
+VERSION=0
+PATCHLEVEL=0
+SUBLEVEL=1
+EXTRAVERSION=
+
+export VERSION PATCHLEVEL SUBLEVEL EXTRAVERSION
+
 arch ?= i686
 kernel := build/elsos-$(arch).bin
 iso := build/elsos-$(arch).iso

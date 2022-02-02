@@ -14,10 +14,10 @@ mod multiboot;
 
 use core::panic::PanicInfo;
 
-static VERSION: &str = "0";
-static PATCHLEVEL: &str = "0";
-static SUBLEVEL: &str = "1";
-static EXTRAVERSION: &str = "";
+static VERSION: &'static str = env!("VERSION");
+static PATCHLEVEL: &'static str = env!("PATCHLEVEL");
+static SUBLEVEL: &'static str = env!("SUBLEVEL");
+static EXTRAVERSION: &'static str = env!("EXTRAVERSION");
 
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32) -> !
