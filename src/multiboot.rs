@@ -1,5 +1,5 @@
-use crate::print;
-use crate::println;
+use crate::log;
+use crate::logln;
 use crate::boot;
 use crate::utilities;
 
@@ -65,12 +65,12 @@ pub fn check_magic(magic: u32) -> bool
 {
 	let magic_ok = magic == BOOTLOADER_MAGIC;
 
-	print!("[{}] multiboot2 magic number", boot::ok_fail(magic_ok));
+	log!("[{}] multiboot2 magic number", boot::ok_fail(magic_ok));
 	if !magic_ok
 	{
-		print!(": expected {:#0x}, got {:#0x}.", BOOTLOADER_MAGIC, magic);
+		log!(": expected {:#0x}, got {:#0x}.", BOOTLOADER_MAGIC, magic);
 	}
-	println!();
+	logln!();
 
 	magic_ok
 }
@@ -109,13 +109,13 @@ pub fn parse(address: u32) -> bool
 {
 	let alignment_ok = address & 7 == 0;
 
-	println!("[{}] multiboot2 structure address alignment", boot::ok_fail(alignment_ok));
+	logln!("[{}] multiboot2 structure address alignment", boot::ok_fail(alignment_ok));
 
 
 	unsafe
 	{
 		let info_header = address as *const MultibootInfoHeader;
-		println!("[INFO] multiboot2 information structure total size: {}", (*info_header).total_size);
+		logln!("[INFO] multiboot2 information structure total size: {}", (*info_header).total_size);
 
 		let mut address = address + 8;
 		loop
@@ -130,16 +130,16 @@ pub fn parse(address: u32) -> bool
 					let mut i = 0;
 
 					let string = (*tag).string();
-					print!("[INFO] {}: ", if (*tag).tag_type == 1 { "cmd line" } else { "bootloader" });
+					log!("[INFO] {}: ", if (*tag).tag_type == 1 { "cmd line" } else { "bootloader" });
 					while string[i] != b'\0'
 					{
-						print!("{}", string[i] as char);
+						log!("{}", string[i] as char);
 						i += 1;
 					}
-					println!();
+					log!("\n");
 				},
 				MULTIBOOT_TAG_TYPE_END => {
-					println!("[INFO] end of multiboot2 information structure");
+					logln!("[INFO] end of multiboot2 information structure");
 					break
 				},
 				_ => {}//println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
