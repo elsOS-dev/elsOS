@@ -46,4 +46,9 @@ impl ColorCode
 	{
 		self.0 >> 4
 	}
+
+	pub const fn default() -> ColorCode
+	{
+		ColorCode::new(Color::White, Color::Blue)
+	}
 }
