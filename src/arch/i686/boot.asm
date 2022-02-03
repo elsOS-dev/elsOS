@@ -3,7 +3,7 @@ global start
 section .bss
 align 16
 stack_bottom:
-resb 16384 ; 16 KiB
+resb 16384
 stack_top:
 
 section .text
@@ -11,6 +11,7 @@ global _start:function (_start.end - _start)
 bits 32
 _start:
 	mov esp, stack_top
+	xor ebp, ebp
 
 	push ebx
 	push eax
@@ -18,10 +19,8 @@ _start:
 	extern kernel_main
 	call kernel_main
 
-	; print `OK` to screen
-	mov dword [0xb8000], 0x2f4b2f4f
-
 .hang:
+	cli
 	hlt
 	jmp .hang
 .end:
