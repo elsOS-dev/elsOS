@@ -15,11 +15,11 @@ impl Writer //color escape commands
 	{
 		if self.cmd.foreground
 		{
-			return Color::White;
+			Color::White
 		}
 		else
 		{
-			return Color::Blue;
+			Color::Blue
 		}
 	}
 

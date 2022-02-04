@@ -70,7 +70,7 @@ pub fn check_magic(magic: u32) -> bool
 	{
 		print!(": expected {:#0x}, got {:#0x}.", BOOTLOADER_MAGIC, magic);
 	}
-	print!("\n");
+	println!();
 
 	magic_ok
 }
@@ -136,7 +136,7 @@ pub fn parse(address: u32) -> bool
 						print!("{}", string[i] as char);
 						i += 1;
 					}
-					print!("\n");
+					println!();
 				},
 				MULTIBOOT_TAG_TYPE_END => {
 					println!("[INFO] end of multiboot2 information structure");
