@@ -10,5 +10,6 @@ panic = "abort"
 panic = "abort"
 
 [lib]
+name = "elsos"
+path = "src/elsos.rs"
 crate-type = ["staticlib"]
-
