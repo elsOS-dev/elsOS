@@ -136,12 +136,12 @@ impl Writer // base stuff
 				self.escape(byte);
 				return;
 			}
-			let row = TTYS[CURRENT_TTY].pos_y;
-
 			if TTYS[CURRENT_TTY].pos_x >= BUFFER_WIDTH && byte != b'\n'
 			{
 				self.new_line();
 			}
+
+			let row = TTYS[CURRENT_TTY].pos_y;
 			match byte
 			{
 				b'\n' => self.new_line(),
@@ -425,8 +425,8 @@ fn cursor_left()
 		if TTYS[CURRENT_TTY].pos_x > 0
 		{
 			TTYS[CURRENT_TTY].pos_x -= 1;
+			TTYS[CURRENT_TTY].move_cursor();
 	   	}
-		TTYS[CURRENT_TTY].move_cursor();
 	}
 }
 
@@ -434,8 +434,11 @@ fn cursor_right()
 {
 	unsafe
 	{
-		TTYS[CURRENT_TTY].pos_x += 1;
-		TTYS[CURRENT_TTY].move_cursor();
+		if TTYS[CURRENT_TTY].pos_x + 1 < BUFFER_WIDTH && TTYS[CURRENT_TTY].chars[TTYS[CURRENT_TTY].pos_y][TTYS[CURRENT_TTY].pos_x] != vga::ScreenChar::blank()
+		{
+			TTYS[CURRENT_TTY].pos_x += 1;
+			TTYS[CURRENT_TTY].move_cursor();
+		}
 	}
 }
 
