@@ -14,13 +14,13 @@ mod multiboot;
 
 use core::panic::PanicInfo;
 
-static VERSION: &'static str = env!("VERSION");
-static PATCHLEVEL: &'static str = env!("PATCHLEVEL");
-static SUBLEVEL: &'static str = env!("SUBLEVEL");
-static EXTRAVERSION: &'static str = env!("EXTRAVERSION");
+static VERSION: &str = env!("VERSION");
+static PATCHLEVEL: &str = env!("PATCHLEVEL");
+static SUBLEVEL: &str = env!("SUBLEVEL");
+static EXTRAVERSION: &str = env!("EXTRAVERSION");
 
 #[no_mangle]
-pub extern "C" fn kernel_main(magic: u32, address: u32) -> !
+pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
 	vga::cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
@@ -37,8 +37,6 @@ pub extern "C" fn kernel_main(magic: u32, address: u32) -> !
 		print!("\x1B41;32mHenlo\x1B38;48m");
 		keyboard::get_scancodes();
 	}
-
-	loop {}
 }
 
 #[panic_handler]

@@ -131,7 +131,7 @@ impl Writer // base stuff
 	{
 		unsafe
 		{
-			if self.is_command == true
+			if self.is_command
 			{
 				self.escape(byte);
 				return;
@@ -230,12 +230,11 @@ impl Writer // getting static stuff
 
 	fn blank(&self) -> vga::ScreenChar
 	{
-		let blank = vga::ScreenChar
+		vga::ScreenChar
 		{
 			character: b' ',
 			color_code: self.color_code,
-		};
-		blank
+		}
 	}
 }
 
@@ -269,16 +268,13 @@ pub fn _print(args: fmt::Arguments)
 
 fn char_from_input(keyboard_input: &keyboard::KeyboardInput) -> Option<char>
 {
-	if keyboard_input.state.ctrl
+	if keyboard_input.state.ctrl && keyboard_input.scancode == 0x2E
 	{
-		if keyboard_input.scancode == 0x2E
-		{
-			shutdown_qemu();
-		}
+		shutdown_qemu();
 	}
 	if keyboard_input.state.shift
 	{
-		return match keyboard_input.scancode
+		match keyboard_input.scancode
 		{
 			0x02 => Some('1'),
 			0x03 => Some('2'),
@@ -331,11 +327,11 @@ fn char_from_input(keyboard_input: &keyboard::KeyboardInput) -> Option<char>
 			0x35 => Some('+'),
 			0x39 => Some(' '),
 			_ => None,
-		};
+		}
 	}
 	else
 	{
-		return match keyboard_input.scancode
+		match keyboard_input.scancode
 		{
 			0x02 => Some('&'),
 			0x03 => Some('é'),
@@ -388,7 +384,7 @@ fn char_from_input(keyboard_input: &keyboard::KeyboardInput) -> Option<char>
 			0x35 => Some('='),
 			0x39 => Some(' '),
 			_ => None,
-		};
+		}
 	}
 }
 

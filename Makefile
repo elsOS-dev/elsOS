@@ -54,6 +54,9 @@ $(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
 kernel: libc
 	cargo +nightly build --target $(target).json
 
+clippy: libc
+	cargo +nightly clippy --target $(target).json
+
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)

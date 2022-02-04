@@ -58,7 +58,7 @@ pub fn get_scancodes()
 							shift: KEYBOARD_STATE.shift,
 							ctrl: KEYBOARD_STATE.ctrl
 						},
-						scancode: scancode,
+						scancode,
 					});
 				}
 			};
