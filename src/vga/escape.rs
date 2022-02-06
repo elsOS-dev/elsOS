@@ -1,4 +1,4 @@
-use crate::tty::Writer;
+use crate::vga::Writer;
 use crate::vga::colors::Color;
 use crate::vga::colors::ColorCode;
 

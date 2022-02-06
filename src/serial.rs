@@ -1,6 +1,5 @@
 use core::fmt;
 use crate::utilities::{inb, outb};
-use crate::vga;
 
 #[macro_export]
 macro_rules! serial_print
@@ -53,8 +52,6 @@ pub fn write(a: u8, port: u32) {
 	outb(port, a);
 }
 
-const BUFFER_WIDTH: usize = vga::BUFFER_WIDTH;
-
 struct Serial
 {
 	port: u32,
@@ -78,10 +75,6 @@ impl Writer // base stuff
 	{
 		unsafe
 		{
-			if SERIAL.pos_x >= BUFFER_WIDTH && byte != b'\n'
-			{
-				self.new_line();
-			}
 			match byte
 			{
 				b'\n' =>

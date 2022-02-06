@@ -1,14 +1,10 @@
-use crate::utilities;
 use crate::keyboard::KeyboardInput;
 
 pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 {
 	if keyboard_input.state.ctrl
 	{
-		if keyboard_input.scancode == 0x2E
-		{
-			utilities::shutdown_qemu();
-		}
+		// to complete
 	}
 	if keyboard_input.state.shift
 	{
@@ -27,7 +23,6 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x0c => Some('°'),
 			0x0d => Some('_'),
 			0x10 => Some('A'),
-			0x0e => Some(0x08 as char),
 			0x11 => Some('Z'),
 			0x12 => Some('E'),
 			0x13 => Some('R'),
@@ -39,7 +34,6 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x19 => Some('P'),
 			0x1A => Some('¨'),
 			0x1B => Some('*'),
-			0x1C => Some('\n'),
 			0x1E => Some('Q'),
 			0x1F => Some('S'),
 			0x20 => Some('D'),
@@ -83,7 +77,6 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x0b => Some('à'),
 			0x0c => Some(')'),
 			0x0d => Some('-'),
-			0x0e => Some(0x08 as char),
 			0x10 => Some('a'),
 			0x11 => Some('z'),
 			0x12 => Some('e'),
@@ -96,7 +89,6 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x19 => Some('p'),
 			0x1A => Some('^'),
 			0x1B => Some('$'),
-			0x1C => Some('\n'),
 			0x1E => Some('q'),
 			0x1F => Some('s'),
 			0x20 => Some('d'),

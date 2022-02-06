@@ -23,8 +23,9 @@ static EXTRAVERSION: &str = env!("EXTRAVERSION");
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
+	init_vga();
 	init_serial();
-	vga::cursor::init(0, 15);
+	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
 		logln!("\n");
@@ -35,15 +36,20 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!("+#+#+#+#+#+   +#+          \\  ;` /^\\ `;  /    ");
 		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
-
-		print!("\x1B41;32mHenlo\x1B38;48m");
+		logln!();
+		tty::prompt();
 		keyboard::get_scancodes();
 	}
 }
 
+fn init_vga()
+{
+	vga::Buffer::clear();
+}
+
 fn init_serial()
 {
-	println!("[{}] init serial", boot::ok_fail(serial::init(serial::COM1)));
+	crate::println!("[{}] init serial", boot::ok_fail(serial::init(serial::COM1)));
 }
 
 #[panic_handler]
@@ -56,21 +62,16 @@ fn panic(info: &PanicInfo) -> !
 #[macro_export]
 macro_rules! log
 {
-	($($arg:tt)*) => ($crate::tty::_print(format_args!($($arg)*)));
-	($($arg:tt)*) => ($crate::serial::_print(format_args!($($arg)*)));
+	($($arg:tt)*) =>
+	{
+		($crate::serial::_print(format_args!($($arg)*)));
+		($crate::tty::_print(format_args!($($arg)*)));
+	}
 }
 
 #[macro_export]
 macro_rules! logln
 {
-	() =>
-	{
-		($crate::print!("\n"));
-		($crate::serial_print!("\n"));
-	};
-	($($arg:tt)*) =>
-	{
-		($crate::print!("{}\n", format_args!($($arg)*)));
-		($crate::serial_print!("{}\n", format_args!($($arg)*)));
-	}
+	() => ($crate::log!("\n"));
+	($($arg:tt)*) => ($crate::log!("{}\n", format_args!($($arg)*)));
 }
