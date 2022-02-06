@@ -1,6 +1,8 @@
 use crate::tty;
 use crate::utilities;
 
+mod azerty;
+
 const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
 const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
@@ -30,6 +32,11 @@ static mut KEYBOARD_STATE: KeyboardState = KeyboardState
     shift: false,
     ctrl: false,
 };
+
+pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
+{
+	azerty::char_from_input(keyboard_input)
+}
 
 pub fn get_scancodes()
 {
