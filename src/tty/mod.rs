@@ -1,107 +1,111 @@
-use core::fmt;
 use crate::keyboard;
 use crate::vga;
 
-use escape::Escaper;
+mod basic_commands;
+mod print;
 
-use crate::vga::colors::ColorCode;
+pub use crate::tty::print::_print;
 
-use crate::utilities::shutdown_qemu;
-
-pub mod escape;
-
-#[macro_export]
-macro_rules! print
-{
-    ($($arg:tt)*) => ($crate::tty::_print(format_args!($($arg)*)));
-}
-
-#[macro_export]
-macro_rules! println
-{
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
-}
-
-const BUFFER_HEIGHT: usize = 2 * vga::BUFFER_HEIGHT;
+const BUFFER_HEIGHT: usize = vga::BUFFER_HEIGHT;
 const BUFFER_WIDTH: usize = vga::BUFFER_WIDTH;
+const BUFFER_SIZE: usize = BUFFER_WIDTH * BUFFER_HEIGHT;
+const INPUT_SIZE: usize = BUFFER_SIZE / 2;
 
-static mut VGA: *mut Tty = 0xb8000 as *mut Tty;
+static mut VGA: *mut vga::Buffer = 0xb8000 as *mut vga::Buffer;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
 struct Tty
 {
-	chars: [[vga::ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
-	pos_x: usize,
-	pos_y: usize,
-	offset_y: usize,
-	has_overflown: bool
-}
-
-fn rem(pos: usize, row: usize, offset: usize) -> usize
-{
-	(pos as isize - vga::BUFFER_HEIGHT as isize + row as isize + 1 - offset as isize
-	).rem_euclid(BUFFER_HEIGHT as isize) as usize
+	has_init: bool,
+	chars: [u8; BUFFER_SIZE],
+	pos: usize,
+	pos_offset: usize,
+	cursor_offset: usize,
+	scroll: usize,
+	input: [u8; INPUT_SIZE],
+	command: &'static str
 }
 
 impl Tty
 {
-	fn no_overflow(&self, row: usize) -> usize
+	fn prompt(&mut self)
 	{
-		if self.pos_y >= vga::BUFFER_HEIGHT
+		if !self.has_init
 		{
-			rem(self.pos_y, row, self.offset_y)
+			self.has_init = true;
+			unsafe
+			{
+				crate::println!("elsOS tty{}\n", CURRENT_TTY + 1);
+			}
 		}
-		else
-		{
-			row
-		}
+		crate::print!("\x1B[30;47mWas esch los ? >\x1B[39;49m ");
 	}
 
-	fn print_to_vga(&self)
+	fn execute(&mut self)
 	{
-		unsafe
-		{
-			for row in 0..vga::BUFFER_HEIGHT
-			{
-				for col in 0..vga::BUFFER_WIDTH
-				{
-					let src_row = match self.has_overflown
-					{
-						true => rem(self.pos_y, row, self.offset_y),
-						false => self.no_overflow(row),
-					};
-					(*VGA).chars[row][col] = self.chars[src_row % BUFFER_HEIGHT][col]
-				}
-			}
-			if TTYS[CURRENT_TTY].offset_y > 0
-			{
-				vga::cursor::disable()
-			}
-			else
-			{
-				vga::cursor::init(0, 15);
-				self.move_cursor();
-			}
-		}
+		basic_commands::execute(self.command);
+		self.prompt();
 	}
 
-	fn move_cursor(&self)
+	fn increase_pos_with_offset(&mut self)
 	{
-		let cursor_row = match self.has_overflown
+		let tmp_offset = self.pos_offset;
+		self.pos_offset = 0;
+		self.increase_pos_by(tmp_offset);
+	}
+
+	fn remove_first_line(&mut self)
+	{
+		let mut len_to_remove: usize = 0;
+
+		for byte in &Tty::current().chars[..]
 		{
-			true => vga::BUFFER_HEIGHT - 1,
-			false => if self.pos_y >= vga::BUFFER_HEIGHT
-				{
-					vga::BUFFER_HEIGHT - 1
-				}
-				else
-				{
-					self.pos_y
-				}
-		};
-		vga::cursor::move_to(self.pos_x as u16, cursor_row as u16);
+			len_to_remove += 1;
+			if *byte == b'\n'
+			{
+				break;
+			}
+		}
+		for i in 0..len_to_remove
+		{
+			Tty::current().chars[i] = b'\0';
+		}
+		self.chars.rotate_left(len_to_remove);
+		self.pos -= len_to_remove;
+	}
+
+	fn increase_pos_by(&mut self, offset: usize)
+	{
+		if self.pos + self.pos_offset + offset >= BUFFER_SIZE
+		{
+			self.remove_first_line();
+		}
+		self.pos += offset;
+	}
+
+	fn current() -> &'static mut Tty
+	{
+		unsafe { &mut TTYS[CURRENT_TTY] }
+	}
+
+	fn clear(&mut self)
+	{
+		self.chars.fill(b'\0');
+		self.pos = 0;
+		self.pos_offset = 0;
+		self.cursor_offset = 0;
+		self.scroll = 0;
+		self.input.fill(b'\0');
+		self.command = "";
+	}
+}
+
+pub fn prompt()
+{
+	unsafe
+	{
+		TTYS[CURRENT_TTY].prompt();
 	}
 }
 
@@ -110,297 +114,75 @@ static mut TTYS: [Tty; 8] =
 [
 	Tty
 	{
-		chars: [[vga::ScreenChar::blank(); BUFFER_WIDTH]; BUFFER_HEIGHT],
-		pos_x: 0,
-		pos_y: 0,
-		offset_y: 0,
-		has_overflown: false
+		has_init: false,
+		chars: [b'\0'; BUFFER_SIZE],
+		pos: 0,
+		pos_offset: 0,
+		cursor_offset: 0,
+		scroll: 0,
+		input: [b'\0'; INPUT_SIZE],
+		command: ""
 	}; 8
 ];
 
-pub struct Writer
+pub fn write_byte(byte: u8, offset: bool)
 {
-	cmd: Escaper,
-	is_command: bool,
-	color_code: ColorCode,
-}
-
-impl Writer // base stuff
-{
-	pub fn write_byte(&mut self, byte: u8)
+	unsafe
 	{
-		unsafe
+		if Tty::current().pos + Tty::current().pos_offset >= BUFFER_SIZE
 		{
-			if self.is_command
-			{
-				self.escape(byte);
-				return;
-			}
-			if TTYS[CURRENT_TTY].pos_x >= BUFFER_WIDTH && byte != b'\n'
-			{
-				self.new_line();
-			}
-
-			let row = TTYS[CURRENT_TTY].pos_y;
-			match byte
-			{
-				b'\n' => self.new_line(),
-				vga::BACKSPACE  => self.backspace(),
-				vga::ESCAPE_START  => self.is_command = true,
-				_ =>
-				{
-					let col = TTYS[CURRENT_TTY].pos_x;
-
-					Writer::buffer().chars[row][col] = vga::ScreenChar {
-						character: byte,
-						color_code: self.color_code,
-					};
-					TTYS[CURRENT_TTY].pos_x += 1;
-				},
-			}
+			Tty::current().remove_first_line();
 		}
-	}
-
-	pub fn write_string(&mut self, s: &str)
-	{
-		for byte in s.bytes()
+		let pos = Tty::current().pos + Tty::current().pos_offset - Tty::current().cursor_offset;
+		if Tty::current().cursor_offset > 0
 		{
-			match byte
-			{
-				0x00..0xfd => self.write_byte(byte),
-				_ => self.write_byte(0xfe),
-			}
+			let right_part: &mut [u8] = &mut Tty::current().chars[pos..];
+			right_part.rotate_right(1);
 		}
-	}
-
-	fn clear_row(&mut self, row: usize)
-	{
-		for col in 0..BUFFER_WIDTH
+		Tty::current().chars[pos] = byte;
+		if offset
 		{
-			Writer::buffer().chars[row][col] = self.blank();
+			TTYS[CURRENT_TTY].pos_offset += 1;
 		}
-	}
-
-	fn new_line(&mut self)
-	{
-		unsafe
+		else
 		{
-			TTYS[CURRENT_TTY].pos_x = 0;
-			TTYS[CURRENT_TTY].pos_y += 1;
-			if TTYS[CURRENT_TTY].pos_y >= BUFFER_HEIGHT
-			{
-				TTYS[CURRENT_TTY].pos_y = 0;
-				TTYS[CURRENT_TTY].has_overflown = true;
-			}
-			self.clear_row(TTYS[CURRENT_TTY].pos_y);
-		}
-	}
-
-	fn backspace(&mut self)
-	{
-		unsafe
-		{
-			if TTYS[CURRENT_TTY].pos_x > 0
-			{
-				TTYS[CURRENT_TTY].pos_x -= 1;
-				Writer::buffer().chars[TTYS[CURRENT_TTY].pos_y][TTYS[CURRENT_TTY].pos_x] = self.blank();
-			}
-			else if TTYS[CURRENT_TTY].pos_y > 0 || TTYS[CURRENT_TTY].has_overflown
-			{
-				TTYS[CURRENT_TTY].pos_x = BUFFER_WIDTH - 1;
-				TTYS[CURRENT_TTY].pos_y = if TTYS[CURRENT_TTY].has_overflown
-				{
-					(TTYS[CURRENT_TTY].pos_y as isize - 1).rem_euclid(BUFFER_HEIGHT as isize) as usize
-				}
-				else
-				{
-					TTYS[CURRENT_TTY].pos_y - 1
-				}
-			}
-		}
-	}
-}
-
-impl Writer // getting static stuff
-{
-	fn buffer() -> &'static mut Tty
-	{
-		unsafe { &mut TTYS[CURRENT_TTY] }
-	}
-
-	fn blank(&self) -> vga::ScreenChar
-	{
-		vga::ScreenChar
-		{
-			character: b' ',
-			color_code: self.color_code,
-		}
-	}
-}
-
-impl fmt::Write for Writer
-{
-	fn write_str(&mut self, s: &str) -> fmt::Result
-	{
-		self.write_string(s);
-		Ok(())
-	}
-}
-
-pub static mut W: Writer = Writer
-{
-cmd: Escaper {foreground: false, background: false, color: ColorCode::default()},
-	is_command: false,
-	color_code: ColorCode::default(),
-};
-
-#[doc(hidden)]
-pub fn _print(args: fmt::Arguments)
-{
-    use core::fmt::Write;
-    unsafe
-	{
-		W.write_fmt(args).unwrap();
-		TTYS[CURRENT_TTY].offset_y = 0;
-		TTYS[CURRENT_TTY].print_to_vga();
-	}
-}
-
-fn char_from_input(keyboard_input: &keyboard::KeyboardInput) -> Option<char>
-{
-	if keyboard_input.state.ctrl && keyboard_input.scancode == 0x2E
-	{
-		shutdown_qemu();
-	}
-	if keyboard_input.state.shift
-	{
-		match keyboard_input.scancode
-		{
-			0x02 => Some('1'),
-			0x03 => Some('2'),
-			0x04 => Some('3'),
-			0x05 => Some('4'),
-			0x06 => Some('5'),
-			0x07 => Some('6'),
-			0x08 => Some('7'),
-			0x09 => Some('8'),
-			0x0a => Some('9'),
-			0x0b => Some('0'),
-			0x0c => Some('°'),
-			0x0d => Some('_'),
-			0x10 => Some('A'),
-			0x0e => Some(0x08 as char),
-			0x11 => Some('Z'),
-			0x12 => Some('E'),
-			0x13 => Some('R'),
-			0x14 => Some('T'),
-			0x15 => Some('Y'),
-			0x16 => Some('U'),
-			0x17 => Some('I'),
-			0x18 => Some('O'),
-			0x19 => Some('P'),
-			0x1A => Some('¨'),
-			0x1B => Some('*'),
-			0x1C => Some('\n'),
-			0x1E => Some('Q'),
-			0x1F => Some('S'),
-			0x20 => Some('D'),
-			0x21 => Some('F'),
-			0x22 => Some('G'),
-			0x23 => Some('H'),
-			0x24 => Some('J'),
-			0x25 => Some('K'),
-			0x26 => Some('L'),
-			0x27 => Some('M'),
-			0x28 => Some('%'),
-			0x29 => Some('>'),
-			0x2B => Some('£'),
-			0x2C => Some('W'),
-			0x2D => Some('X'),
-			0x2E => Some('C'),
-			0x2F => Some('V'),
-			0x30 => Some('B'),
-			0x31 => Some('N'),
-			0x32 => Some('?'),
-			0x33 => Some('.'),
-			0x34 => Some('/'),
-			0x35 => Some('+'),
-			0x39 => Some(' '),
-			_ => None,
-		}
-	}
-	else
-	{
-		match keyboard_input.scancode
-		{
-			0x02 => Some('&'),
-			0x03 => Some('é'),
-			0x04 => Some('"'),
-			0x05 => Some('\''),
-			0x06 => Some('('),
-			0x07 => Some('§'),
-			0x08 => Some('è'),
-			0x09 => Some('!'),
-			0x0a => Some('ç'),
-			0x0b => Some('à'),
-			0x0c => Some(')'),
-			0x0d => Some('-'),
-			0x0e => Some(0x08 as char),
-			0x10 => Some('a'),
-			0x11 => Some('z'),
-			0x12 => Some('e'),
-			0x13 => Some('r'),
-			0x14 => Some('t'),
-			0x15 => Some('y'),
-			0x16 => Some('u'),
-			0x17 => Some('i'),
-			0x18 => Some('o'),
-			0x19 => Some('p'),
-			0x1A => Some('^'),
-			0x1B => Some('$'),
-			0x1C => Some('\n'),
-			0x1E => Some('q'),
-			0x1F => Some('s'),
-			0x20 => Some('d'),
-			0x21 => Some('f'),
-			0x22 => Some('g'),
-			0x23 => Some('h'),
-			0x24 => Some('j'),
-			0x25 => Some('k'),
-			0x26 => Some('l'),
-			0x27 => Some('m'),
-			0x28 => Some('ù'),
-			0x29 => Some('<'),
-			0x2B => Some('`'),
-			0x2C => Some('w'),
-			0x2D => Some('x'),
-			0x2E => Some('c'),
-			0x2F => Some('v'),
-			0x30 => Some('b'),
-			0x31 => Some('n'),
-			0x32 => Some(','),
-			0x33 => Some(';'),
-			0x34 => Some(':'),
-			0x35 => Some('='),
-			0x39 => Some(' '),
-			_ => None,
+			TTYS[CURRENT_TTY].pos += 1;
 		}
 	}
 }
 
 pub fn input(keyboard_input: &keyboard::KeyboardInput)
 {
-	if let Some(key) = char_from_input(keyboard_input)
+	if let Some(key) = keyboard::char_from_input(keyboard_input)
 	{
-		let key_1 = if keyboard_input.state.ctrl { "^" } else { "" };
-		let key_2 = if keyboard_input.state.ctrl { "\n" } else { "" };
-		print!("{}{}{}",key_1, key, key_2);
+		if Tty::current().pos_offset < BUFFER_SIZE / 2
+		{
+			write_byte(key as u8, true);
+			if Tty::current().scroll > 0
+			{
+				unsafe
+				{
+					vga::W.scroll = 0;
+					print::print_to_vga();
+				}
+			}
+			else if Tty::current().cursor_offset > 0
+			{
+				print::print_to_vga();
+			}
+			else
+			{
+				print::print_byte_to_vga(key as u8);
+			}
+		}
 	}
 	else
 	{
 		match keyboard_input.scancode
 		{
-			0x01 => print!("\x1B"),
+			0x01 => crate::print!("\x1B"),
+			0x0e => backspace(),
+			0x1C => line_return(),
 			0x4B => cursor_left(),
 			0x4D => cursor_right(),
 			0x48 => cursor_up(),
@@ -408,7 +190,7 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 			0x3B..=0x42 => handle_tty_change((keyboard_input.scancode - 0x3B).into()),
 			_ => if keyboard_input.scancode & 0x80 == 0
 				{
-					println!("scancode: {:#x}", keyboard_input.scancode);
+					crate::serial_println!("scancode: {:#x}", keyboard_input.scancode);
 				}
 		};
 	}
@@ -416,57 +198,49 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 
 fn cursor_left()
 {
-	unsafe
+	if Tty::current().pos_offset - Tty::current().cursor_offset > 0
 	{
-		if TTYS[CURRENT_TTY].pos_x > 0
+		let position = vga::cursor::Cursor::get_position();
+
+		Tty::current().cursor_offset += 1;
+		unsafe
 		{
-			TTYS[CURRENT_TTY].pos_x -= 1;
-			TTYS[CURRENT_TTY].move_cursor();
-	   	}
+			vga::cursor::CURSOR.offset = Tty::current().cursor_offset;
+		}
+		vga::cursor::Cursor::move_to(position.0, position.1);
 	}
 }
 
 fn cursor_right()
 {
-	unsafe
+	if Tty::current().cursor_offset > 0
 	{
-		if TTYS[CURRENT_TTY].pos_x + 1 < BUFFER_WIDTH && TTYS[CURRENT_TTY].chars[TTYS[CURRENT_TTY].pos_y][TTYS[CURRENT_TTY].pos_x] != vga::ScreenChar::blank()
+		Tty::current().cursor_offset -= 1;
+		unsafe
 		{
-			TTYS[CURRENT_TTY].pos_x += 1;
-			TTYS[CURRENT_TTY].move_cursor();
+			vga::cursor::CURSOR.offset -= 1;
 		}
-	}
-}
 
-fn cursor_up()
-{
-	unsafe
-	{
-		let tmp = if TTYS[CURRENT_TTY].has_overflown
-		{
-			BUFFER_HEIGHT
-		}
-		else
-		{
-			rem(TTYS[CURRENT_TTY].pos_y, 0, 0)
-		};
-		if TTYS[CURRENT_TTY].offset_y < tmp
-		{
-			TTYS[CURRENT_TTY].offset_y += 1;
-		}
-		TTYS[CURRENT_TTY].print_to_vga();
+		let position = vga::cursor::Cursor::get_position();
+		vga::cursor::Cursor::move_to(position.0 + 1, position.1);
 	}
 }
 
 fn cursor_down()
 {
-	unsafe
+	if vga::scroll_down()
 	{
-		if TTYS[CURRENT_TTY].offset_y > 0
-		{
-			TTYS[CURRENT_TTY].offset_y -= 1;
-		}
-		TTYS[CURRENT_TTY].print_to_vga();
+		Tty::current().scroll -= 1;
+		print::print_to_vga();
+	}
+}
+
+fn cursor_up()
+{
+	if vga::scroll_up()
+	{
+		Tty::current().scroll += 1;
+		print::print_to_vga();
 	}
 }
 
@@ -475,6 +249,48 @@ fn handle_tty_change(tty: usize)
 	unsafe
 	{
 		CURRENT_TTY = tty;
-		TTYS[CURRENT_TTY].print_to_vga();
+		if !Tty::current().has_init
+		{
+			Tty::current().prompt();
+		}
+		vga::cursor::CURSOR.offset = Tty::current().cursor_offset;
+		vga::W.scroll = Tty::current().scroll;
+		print::print_to_vga();
+	}
+}
+
+fn line_return()
+{
+	let input_start = Tty::current().pos;
+	let input_len = Tty::current().pos_offset;
+	Tty::current().input.fill(b'\0');
+	Tty::current().input[..input_len].copy_from_slice(&Tty::current().chars[input_start..input_start + input_len]);
+	Tty::current().command = &core::str::from_utf8(&Tty::current().input).unwrap()[..input_len];
+	Tty::current().increase_pos_with_offset();
+	Tty::current().increase_pos_by(1);
+	Tty::current().cursor_offset = 0;
+	unsafe
+	{
+		vga::cursor::CURSOR.offset = 0;
+	}
+	crate::println!();
+	Tty::current().execute();
+}
+
+fn backspace()
+{
+	if Tty::current().pos_offset - Tty::current().cursor_offset > 0
+	{
+		Tty::current().pos_offset -= 1;
+
+		let pos = Tty::current().pos + Tty::current().pos_offset - Tty::current().cursor_offset;
+
+		Tty::current().chars[pos] = b'\0';
+		if Tty::current().cursor_offset > 0
+		{
+			let right_part: &mut [u8] = &mut Tty::current().chars[pos..];
+			right_part.rotate_left(1);
+		}
+		print::print_to_vga();
 	}
 }
