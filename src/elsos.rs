@@ -28,13 +28,13 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
 		logln!("\n");
-		logln!("        :::      ::::::::     __ _  ____  ____  ");
-		logln!("      :+:      :+:    :+:    |  / )|  __)/ ___) ");
-		logln!("    +:+ +:+         +:+      |   ( |  _) \\___ \\ ");
-		logln!("  +#+  +:+       +#+         |__\\_)|__)  (____/ ");
-		logln!("+#+#+#+#+#+   +#+           ");
-		logln!("     #+#    #+#              Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
-		logln!("    ###   #########          Hello, kernel world !");
+		logln!("        :::      ::::::::    __       __       __ _  ____  ____  ");
+		logln!("      :+:      :+:    :+:  .'  `'._.'`  '.    (  / )(  __)/ ___) ");
+		logln!("    +:+ +:+         +:+   |  .--;   ;--.  |   |   ( |  _) \\___ \\ ");
+		logln!("  +#+  +:+       +#+      |  (  /   \\  )  |   (__\\_)(__)  (____/ ");
+		logln!("+#+#+#+#+#+   +#+          \\  ;` /^\\ `;  /    ");
+		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
+		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
 
 		print!("\x1B41;32mHenlo\x1B38;48m");
 		keyboard::get_scancodes();
