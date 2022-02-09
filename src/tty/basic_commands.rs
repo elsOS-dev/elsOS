@@ -10,6 +10,7 @@ pub fn execute(command: &str)
 		"clear" => clear(),
 		"halt" | "exit" => halt(),
 		"reboot" => reboot(),
+		"scheen" => scheen(),
 		"" => {},
 		_ => crate::println!("{}: unknown command. Use help for more", command)
 	};
@@ -35,6 +36,11 @@ fn reboot()
 		asm!("push 0000h");
 		asm!("retf");
 	}
+}
+
+fn scheen()
+{
+	crate::println!("yo yo des esch d'becht OS eh ?");
 }
 
 fn help()
