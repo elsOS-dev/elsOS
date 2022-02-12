@@ -3,7 +3,7 @@ pub fn ok_fail(value: bool) -> &'static str
 {
 	match value
 	{
-		true => "\x1B32m OK \x1B38m",
-		false => "\x1B31mFAIL\x1B38m"
+		true => "\x1B[32m OK \x1B[39m",
+		false => "\x1B[31mFAIL\x1B[39m"
 	}
 }
