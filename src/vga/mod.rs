@@ -300,6 +300,18 @@ impl fmt::Write for Writer
 	}
 }
 
+pub fn panic()
+{
+	Cursor::disable();
+	for row in 0..BUFFER_HEIGHT
+	{
+		for col in 0..BUFFER_WIDTH
+		{
+			Buffer::buffer().chars[row][col].color_code = ColorCode::panic();
+		}
+	}
+}
+
 pub static mut W: Writer = Writer
 {
 	cmd: Escaper
