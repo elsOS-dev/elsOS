@@ -49,6 +49,6 @@ impl ColorCode
 
 	pub const fn default() -> ColorCode
 	{
-		ColorCode::new(Color::White, Color::Blue)
+		ColorCode::new(Color::White, Color::Black)
 	}
 }
