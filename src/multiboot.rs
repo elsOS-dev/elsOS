@@ -1,7 +1,7 @@
 use crate::log;
 use crate::logln;
-use crate::boot;
 use crate::utilities;
+use crate::ok_fail;
 
 const BOOTLOADER_MAGIC: u32 = 0x36d76289;
 
@@ -65,7 +65,7 @@ pub fn check_magic(magic: u32) -> bool
 {
 	let magic_ok = magic == BOOTLOADER_MAGIC;
 
-	log!("[{}] multiboot2 magic number", boot::ok_fail(magic_ok));
+	log!("[{}] multiboot2 magic number", ok_fail(magic_ok));
 	if !magic_ok
 	{
 		log!(": expected {:#0x}, got {:#0x}.", BOOTLOADER_MAGIC, magic);
@@ -109,7 +109,7 @@ pub fn parse(address: u32) -> bool
 {
 	let alignment_ok = address & 7 == 0;
 
-	logln!("[{}] multiboot2 structure address alignment", boot::ok_fail(alignment_ok));
+	logln!("[{}] multiboot2 structure address alignment", ok_fail(alignment_ok));
 
 
 	unsafe
