@@ -19,7 +19,7 @@ impl Writer //color escape commands
 		}
 		else
 		{
-			Color::Blue
+			Color::Black
 		}
 	}
 
