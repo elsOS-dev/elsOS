@@ -63,7 +63,8 @@ pub fn ok_fail(value: bool) -> &'static str
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !
 {
-	logln!("{}", info);
+	vga::panic();
+	logln!("\n\x1B[31;49m{}\x1B[39;49m", info);
 	loop {}
 }
 

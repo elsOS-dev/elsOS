@@ -51,4 +51,9 @@ impl ColorCode
 	{
 		ColorCode::new(Color::White, Color::Black)
 	}
+
+	pub const fn panic() -> ColorCode
+	{
+		ColorCode::new(Color::White, Color::Red)
+	}
 }
