@@ -1,7 +1,8 @@
 NAME=libc.a
 SRC=memset.c memmove.c memcpy.c memcmp.c
 OBJ=${SRC:.c=.o}
-AR=$(HOME)/opt/cross/bin/i686-elf-ar
+ARCH=i686
+AR=$(ARCH)-elf-ar
 ARFLAGS=rcs
 
 all: $(NAME)
