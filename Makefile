@@ -5,40 +5,40 @@ EXTRAVERSION=
 
 export VERSION PATCHLEVEL SUBLEVEL EXTRAVERSION
 
-arch ?= i686
-kernel := build/elsos-$(arch).bin
-iso := build/elsos-$(arch).iso
-target ?= $(arch)-elsos
-rust_os := target/$(target)/debug/libelsos.a
+DEBUG_RELEASE=debug
+ARCH=i686
+KERNEL=build/elsos-$(ARCH).bin
+ISO=build/elsos-$(ARCH).iso
+TARGET=$(ARCH)-elsos
+RUST_OS=target/$(TARGET)/$(DEBUG_RELEASE)/libelsos.a
 
-LD=$(HOME)/opt/cross/bin/i686-elf-ld
-CC=$(HOME)/opt/cross/bin/i686-elf-gcc
+LD=$(ARCH)-elf-ld
+CC=$(ARCH)-elf-gcc
 
 CFLAGS=-m32 -std=gnu99 -ffreestanding -Wall -Wextra -c
 
 export CFLAGS
 export CC
 
-linker_script := src/arch/$(arch)/linker.ld
-grub_cfg := src/arch/$(arch)/grub.cfg
-assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
-assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
-	build/arch/$(arch)/%.o, $(assembly_source_files))
+LD_SCRIPT=src/arch/$(ARCH)/linker.ld
+GRUB_CFG=grub/grub.cfg
+ASM_SRC=$(wildcard src/arch/$(ARCH)/*.asm)
+ASM_OBJ=$(subst src/, build/, ${ASM_SRC:.asm=.o})
 
 .PHONY: all clean run iso kernel
 
-all: $(kernel)
+all: $(KERNEL)
 
-run: $(iso)
-	@qemu-system-x86_64 -drive format=raw,file=$(iso) -serial stdio
+run: $(ISO)
+	@qemu-system-x86_64 -drive format=raw,file=$(ISO) -serial stdio
 
-iso: $(iso)
+iso: $(ISO)
 
-$(iso): $(kernel) $(grub_cfg)
+$(ISO): $(KERNEL) $(GRUB_CFG)
 	@mkdir -p build/iso/boot/grub
-	@cp $(kernel) build/iso/boot/elsos.bin
-	@cp $(grub_cfg) build/iso/boot/grub
-	@grub-mkrescue -o $(iso) build/iso 2> /dev/null
+	@cp $(KERNEL) build/iso/boot/elsos.bin
+	@cp $(GRUB_CFG) build/iso/boot/grub
+	@grub-mkrescue -o $(ISO) build/iso 2> /dev/null
 	@rm -r build/iso
 
 libc: libc.a
@@ -47,18 +47,17 @@ libc.a:
 	@make -C src/libc
 	@cp src/libc/libc.a .
 
-$(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
-	$(LD) -n --gc-sections -T $(linker_script) 	\
-		-o $(kernel) $(assembly_object_files) $(rust_os)
+$(KERNEL): kernel $(RUST_OS) $(ASM_OBJ) $(LD_SCRIPT)
+	$(LD) -n --gc-sections -T $(LD_SCRIPT) -o $(KERNEL) $(ASM_OBJ) $(RUST_OS)
 
 kernel: libc
-	cargo +nightly build --target $(target).json
+	cargo +nightly build --target $(TARGET).json
 
 clippy: libc
-	cargo +nightly clippy --target $(target).json
+	cargo +nightly clippy --target $(TARGET).json
 
 # compile assembly files
-build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
+build/arch/$(ARCH)/%.o: src/arch/$(ARCH)/%.asm
 	@mkdir -p $(shell dirname $@)
 	@nasm -f elf32 $< -o $@
 
