@@ -2,6 +2,7 @@ use crate::tty;
 use crate::utilities;
 
 mod azerty;
+mod qwerty;
 
 const KEYBOARD_DATA: u32 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
