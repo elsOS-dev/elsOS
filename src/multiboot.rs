@@ -105,12 +105,43 @@ fn type_name(tag_type: u32) -> &'static str
 	}
 }
 
+fn handle_qwerty()
+{
+	unsafe
+	{
+		crate::SETTINGS.layout = 1;
+	}
+}
+
+fn parse_args(args: &[u8])
+{
+	let mut previous_index: usize = 0;
+	for (i, chr) in args.iter().enumerate()
+	{
+		let i = if i + 1 == args.len() { i + 1 } else { i };
+
+		if *chr == b' ' || i == args.len()
+		{
+			let arg = core::str::from_utf8(&args[previous_index..i]).unwrap_or_else(|_| { "" });
+
+			logln!("[INFO] paring arg {}", arg);
+
+			match arg
+			{
+				"qwerty" => handle_qwerty(),
+				_ => {}
+			};
+
+			previous_index = i + 1;
+		}
+	}
+}
+
 pub fn parse(address: u32) -> bool
 {
 	let alignment_ok = address & 7 == 0;
 
 	logln!("[{}] multiboot2 structure address alignment", ok_fail(alignment_ok));
-
 
 	unsafe
 	{
@@ -130,13 +161,17 @@ pub fn parse(address: u32) -> bool
 					let mut i = 0;
 
 					let string = (*tag).string();
-					log!("[INFO] {}: ", if (*tag).tag_type == 1 { "cmd line" } else { "bootloader" });
+					log!("[INFO] {}: ", if (*tag).tag_type == MULTIBOOT_TAG_TYPE_CMDLINE { "cmd line" } else { "bootloader" });
 					while string[i] != b'\0'
 					{
 						log!("{}", string[i] as char);
 						i += 1;
 					}
-					log!("\n");
+					logln!();
+					if (*tag).tag_type == MULTIBOOT_TAG_TYPE_CMDLINE
+					{
+						parse_args(&string[..i]);
+					}
 				},
 				MULTIBOOT_TAG_TYPE_END => {
 					logln!("[INFO] end of multiboot2 information structure");

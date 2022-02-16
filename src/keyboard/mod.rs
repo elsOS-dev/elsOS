@@ -36,7 +36,17 @@ static mut KEYBOARD_STATE: KeyboardState = KeyboardState
 
 pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 {
-	azerty::char_from_input(keyboard_input)
+	unsafe
+	{
+		if crate::SETTINGS.layout == 1
+		{
+			qwerty::char_from_input(keyboard_input)
+		}
+		else
+		{
+			azerty::char_from_input(keyboard_input)
+		}
+	}
 }
 
 pub fn get_scancodes()

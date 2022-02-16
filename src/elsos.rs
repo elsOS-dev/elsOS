@@ -19,6 +19,16 @@ static PATCHLEVEL: &str = env!("PATCHLEVEL");
 static SUBLEVEL: &str = env!("SUBLEVEL");
 static EXTRAVERSION: &str = env!("EXTRAVERSION");
 
+pub struct Settings
+{
+	layout: u8
+}
+
+pub static mut SETTINGS: Settings = Settings
+{
+	layout: 0
+};
+
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
