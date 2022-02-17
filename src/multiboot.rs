@@ -113,6 +113,14 @@ fn handle_qwerty()
 	}
 }
 
+fn handle_serial()
+{
+	unsafe
+	{
+		crate::SETTINGS.has_serial = true;
+	}
+}
+
 fn parse_args(args: &[u8])
 {
 	let mut previous_index: usize = 0;
@@ -129,6 +137,7 @@ fn parse_args(args: &[u8])
 			match arg
 			{
 				"qwerty" => handle_qwerty(),
+				"serial" => handle_serial(),
 				_ => {}
 			};
 

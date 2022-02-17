@@ -21,11 +21,13 @@ static EXTRAVERSION: &str = env!("EXTRAVERSION");
 
 pub struct Settings
 {
+	has_serial: bool,
 	layout: u8
 }
 
 pub static mut SETTINGS: Settings = Settings
 {
+	has_serial: false,
 	layout: 0
 };
 
@@ -33,10 +35,10 @@ pub static mut SETTINGS: Settings = Settings
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
 	init_vga();
-	init_serial();
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
+		init_serial();
 		logln!("\n");
 		logln!("        :::      ::::::::    __       __       __ _  ____  ____  ");
 		logln!("      :+:      :+:    :+:  .'  `'._.'`  '.    (  / )(  __)/ ___) ");
