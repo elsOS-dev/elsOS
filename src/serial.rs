@@ -24,6 +24,13 @@ fn check_serial_chip(port: u32) -> bool
 
 pub fn init(port: u32) -> bool
 {
+	unsafe
+	{
+		if !crate::SETTINGS.has_serial
+		{
+			return false;
+		}
+	}
 	outb(port + 1, 0x00); // Disable all interrupts
 	outb(port + 3, 0x80); // Enable DLAB (set baud rate divisor)
 	outb(port + 0, 0x03); // Set divisor to 3 (lo byte) (115 200 / 3 => 38400 baud)
@@ -129,9 +136,16 @@ pub static mut W: Writer = Writer
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments)
 {
-	use core::fmt::Write;
 	unsafe
 	{
-		W.write_fmt(args).unwrap();
+		if !crate::SETTINGS.has_serial
+		{
+			return;
+		}
+		else
+		{
+			use core::fmt::Write;
+			W.write_fmt(args).unwrap();
+		}
 	}
 }
