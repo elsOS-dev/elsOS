@@ -155,6 +155,21 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 {
 	if let Some(key) = keyboard::char_from_input(keyboard_input)
 	{
+		if keyboard_input.state.ctrl
+		{
+			match key
+			{
+				'C' | 'c' => {
+					write_byte(b'^', true);
+					write_byte(b'C', true);
+					print::print_to_vga();
+					line_return(false);
+					prompt();
+					return;
+				},
+				_ => {}
+			};
+		}
 		if Tty::current().pos_offset < BUFFER_SIZE / 2
 		{
 			write_byte(key as u8, true);
@@ -180,9 +195,8 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 	{
 		match keyboard_input.scancode
 		{
-			0x01 => crate::print!("\x1B"),
 			0x0e => backspace(),
-			0x1C => line_return(),
+			0x1C => line_return(true),
 			0x4B => cursor_left(),
 			0x4D => cursor_right(),
 			0x48 => cursor_up(),
@@ -259,7 +273,7 @@ fn handle_tty_change(tty: usize)
 	}
 }
 
-fn line_return()
+fn line_return(execute: bool)
 {
 	let input_start = Tty::current().pos;
 	let input_len = Tty::current().pos_offset;
@@ -274,7 +288,10 @@ fn line_return()
 		vga::cursor::CURSOR.offset = 0;
 	}
 	crate::println!();
-	Tty::current().execute();
+	if execute
+	{
+		Tty::current().execute();
+	}
 }
 
 fn backspace()
