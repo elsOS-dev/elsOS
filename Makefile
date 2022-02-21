@@ -30,7 +30,13 @@ ASM_OBJ=$(subst src/, build/, ${ASM_SRC:.asm=.o})
 all: $(KERNEL)
 
 run: $(ISO)
-	@qemu-system-x86_64 -drive format=raw,file=$(ISO) -serial stdio
+	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio
+
+rund: $(ISO)
+	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int
+
+rundd: $(ISO)
+	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int -s -S
 
 iso: $(ISO)
 
