@@ -35,7 +35,6 @@ pub static mut SETTINGS: Settings = Settings
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
-
 	gdt::init_gdt();
 	init_vga();
 	vga::cursor::Cursor::init(0, 15);
@@ -99,3 +98,4 @@ macro_rules! logln
 	() => ($crate::log!("\n"));
 	($($arg:tt)*) => ($crate::log!("{}\n", format_args!($($arg)*)));
 }
+

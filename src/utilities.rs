@@ -64,3 +64,44 @@ pub unsafe fn from_c_str(ptr: *const u8) -> &'static [u8]
 	slice::from_raw_parts(ptr, strlen(ptr) + 1)
 }
 
+pub unsafe fn print_memory(ptr: *const u8, n: usize)
+{
+	let mut i: usize = 0;
+
+	while i < n
+	{
+		if i % 16 == 0
+		{
+			crate::log!("{:0x}:  ", ptr.add(i) as u32);
+		}
+		crate::log!("{:02x?} ", *ptr.add(i));
+		i += 1;
+		if i % 16 == 0
+		{
+			crate::log!(" |");
+			for i in i - 16..i
+			{
+				let chr = *ptr.add(i);
+				crate::log!("{}", if chr > 0x1f && chr < 0x7f {chr as char } else { '.' });
+			}
+			crate::log!("|");
+			crate::logln!();
+		}
+		else if i % 8 == 0
+		{
+			crate::log!("  ");
+		}
+	}
+	crate::logln!();
+}
+
+#[macro_export]
+macro_rules! get_reg
+{
+	($reg:expr) =>
+	{{
+		let val: u32;
+		core::arch::asm!(concat!("mov {}, ", $reg), out(reg) val);
+		val
+	}}
+}

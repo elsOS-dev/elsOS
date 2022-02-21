@@ -12,6 +12,7 @@ pub fn execute(command: &str)
 		"reboot" => reboot(),
 		"scheen" => scheen(),
 		"pm" |"printmem" => printmem(),
+		"ps" |"printstack" => print_stack(),
 		"panic" => panic(),
 		"" => {},
 		_ => crate::println!("{}: unknown command. Use help for more", command)
@@ -54,6 +55,14 @@ fn printmem()
 		crate::serial_print!("{}", super::Tty::current().chars[i] as char);
 	}
 	crate::serial_println!("==============");
+}
+
+fn print_stack()
+{
+	unsafe
+	{
+		utilities::print_memory(crate::get_reg!("esp") as *const u8, 10 * 16);
+	}
 }
 
 fn panic()
