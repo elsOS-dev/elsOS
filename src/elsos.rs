@@ -15,15 +15,15 @@ use alloc::string::String;
 
 mod arch;
 mod ferramenta;
-mod vga;
 mod keyboard;
-mod tty;
+mod libc;
+mod memory;
 mod multiboot;
 mod serial;
-mod memory;
-mod libc;
-mod time;
 mod syscall;
+mod time;
+mod tty;
+mod vga;
 
 static VERSION: &str = env!("VERSION");
 static PATCHLEVEL: &str = env!("PATCHLEVEL");
