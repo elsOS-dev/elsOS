@@ -78,7 +78,48 @@ pub fn ok_fail(value: bool) -> &'static str
 fn panic(info: &PanicInfo) -> !
 {
 	vga::panic();
-	logln!("\n\x1B[31;49m{}\x1B[39;49m", info);
+	logln!("\n\x1B[31;49m{}\x1B[39;49m\n", info);
+
+	let eax: u32;
+	let ebx: u32;
+	let ecx: u32;
+	let edx: u32;
+
+	let esi: u32;
+	let edi: u32;
+	let esp: u32;
+	let ebp: u32;
+
+	unsafe
+	{
+		eax = crate::get_reg!("eax");
+		ebx = crate::get_reg!("ebx");
+		ecx = crate::get_reg!("ecx");
+		edx = crate::get_reg!("edx");
+
+		esi = crate::get_reg!("esi");
+		edi = crate::get_reg!("edi");
+		esp = crate::get_reg!("esp");
+		ebp = crate::get_reg!("ebp");
+	}
+
+	logln!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
+	logln!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
+
+	log!("\nstack: ");
+	for i in 0..24
+	{
+		unsafe
+		{
+			log!("{:08x} ", *(esp as *const u32).add(i * 4));
+			if (i + 1) % 8 == 0
+			{
+				log!("\n       ");
+			}
+		}
+	}
+
+	logln!("");
 	loop {}
 }
 
