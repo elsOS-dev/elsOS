@@ -2,6 +2,8 @@ use crate::log;
 use crate::logln;
 use crate::utilities;
 use crate::ok_fail;
+use core::slice;
+use core::mem::size_of;
 
 const BOOTLOADER_MAGIC: u32 = 0x36d76289;
 
@@ -57,6 +59,52 @@ impl MultibootTagString
 		unsafe
 		{
 			utilities::from_c_str((&self.str_ptr as *const _) as *const u8)
+		}
+	}
+}
+
+struct MultibootTagBasicMeminfo
+{
+	tag_type: u32,
+	size: u32,
+	mem_lower: u32,
+	mem_upper: u32
+}
+
+// constants for the type inside MultiBootMmapEntry struct
+const MULTIBOOT_MEMORY_AVAILABLE: u32 = 1;
+const MULTIBOOT_MEMORY_RESERVED: u32 = 2;
+const MULTIBOOT_MEMORY_ACPI_RECLAIMABLE: u32 = 3;
+const MULTIBOOT_MEMORY_NVS: u32 = 4;
+const MULTIBOOT_MEMORY_BADRAM: u32 = 5;
+#[repr(C)]
+#[derive(Debug)]
+struct MultibootMmapEntry
+{
+	addr: u64,
+	len: u64,
+	tag_type: u32,
+	zero: u32
+}
+
+#[repr(C)]
+struct MultibootTagMmap
+{
+
+	tag_type: u32,
+	size: u32,
+	entry_size: u32,
+	entry_version: u32,
+	entries_ptr: &'static [MultibootMmapEntry]//u32, // struct *MultibootMmapEntry
+}
+
+impl MultibootTagMmap
+{
+	fn entries(&self, number: usize) -> &'static [MultibootMmapEntry]
+	{
+		unsafe
+		{
+			slice::from_raw_parts((&self.entries_ptr as *const _) as *const MultibootMmapEntry, number)
 		}
 	}
 }
@@ -186,7 +234,20 @@ pub fn parse(address: u32) -> bool
 					logln!("[INFO] end of multiboot2 information structure");
 					break
 				},
-				_ => {}//println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
+				MULTIBOOT_TAG_TYPE_BASIC_MEMINFO =>
+				{
+					let meminfo = tag as *const MultibootTagBasicMeminfo;
+					crate::logln!("\x1B[33mupper: {:#}\nlower:{:#}\x1B[39m", (*meminfo).mem_upper, (*meminfo).mem_lower);
+				}
+				MULTIBOOT_TAG_TYPE_MMAP =>
+				{
+					let mmap = tag as *const MultibootTagMmap;
+
+					let number: usize = (*tag).size as usize / size_of::<MultibootMmapEntry>();
+
+					crate::logln!("\x1B[33mmmap: {:?}\x1B[39m", (*mmap).entries(number));
+				}
+				_ => {}//crate::println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
 			};
 
 			address += ((*tag).size + 7) & !7;
