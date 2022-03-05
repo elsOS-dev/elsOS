@@ -1,4 +1,4 @@
-use crate::utilities::{inb, outb};
+use crate::tools::{inb, outb};
 use crate::vga::BUFFER_WIDTH;
 
 const CRT_ADDR_REG: u32 = 0x3D4;

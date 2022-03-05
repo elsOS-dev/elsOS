@@ -64,7 +64,6 @@ pub unsafe fn from_c_str(ptr: *const u8) -> &'static [u8]
 	slice::from_raw_parts(ptr, strlen(ptr) + 1)
 }
 
-<<<<<<< HEAD
 pub unsafe fn print_memory(ptr: *const u8, n: usize)
 {
 	let mut i: usize = 0;

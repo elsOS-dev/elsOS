@@ -1,5 +1,5 @@
 use core::arch::asm;
-use crate::utilities;
+use crate::tools;
 use crate::vga;
 
 pub fn execute(command: &str)
@@ -60,7 +60,7 @@ fn clear()
 
 fn halt()
 {
-	utilities::shutdown_qemu();
+	tools::shutdown_qemu();
 }
 
 fn reboot()
@@ -96,11 +96,11 @@ fn printmem_at(address: *const u8, binary: bool)
 	{
 		if binary
 		{
-			utilities::print_memory_bin(address, 256);
+			tools::print_memory_bin(address, 256);
 		}
 		else
 		{
-			utilities::print_memory(address, 256);
+			tools::print_memory(address, 256);
 		}
 	}
 }
@@ -109,7 +109,7 @@ fn print_stack()
 {
 	unsafe
 	{
-		utilities::print_memory(crate::get_reg!("esp") as *const u8, 10 * 16);
+		tools::print_memory(crate::get_reg!("esp") as *const u8, 10 * 16);
 	}
 }
 
