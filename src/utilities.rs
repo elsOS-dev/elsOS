@@ -9,40 +9,40 @@ pub fn shutdown_qemu()
 #[inline(always)]
 pub fn outw(port: u32, value: u16)
 {
-    unsafe
-    {
-        asm!("out dx, ax", in("dx") port, in("ax") value,
-                options(nomem, nostack, preserves_flags));
-    }
+	unsafe
+	{
+		asm!("out dx, ax", in("dx") port, in("ax") value,
+				options(nomem, nostack, preserves_flags));
+	}
 }
 
 #[inline(always)]
 pub fn inb(port: u32) -> u8
 {
-    let ret: u8;
-    unsafe
-    {
-        asm!("in al, dx", out("al") ret, in("dx") port,
-                options(nomem, nostack, preserves_flags));
-    }
-    ret
+	let ret: u8;
+	unsafe
+	{
+		asm!("in al, dx", out("al") ret, in("dx") port,
+				options(nomem, nostack, preserves_flags));
+	}
+	ret
 }
 
 #[inline(always)]
 pub fn outb(port: u32, value: u8)
 {
-    unsafe
-    {
-        asm!("out dx, al", in("dx") port, in("al") value,
-                options(nomem, nostack, preserves_flags));
-    }
+	unsafe
+	{
+		asm!("out dx, al", in("dx") port, in("al") value,
+				options(nomem, nostack, preserves_flags));
+	}
 }
 
 pub fn get_bit_at(input: u8, n: u8) -> bool
 {
 	if n < 8
 	{
-        return input & (1 << n) != 0;
+		return input & (1 << n) != 0;
 	}
 	false
 }
@@ -64,6 +64,7 @@ pub unsafe fn from_c_str(ptr: *const u8) -> &'static [u8]
 	slice::from_raw_parts(ptr, strlen(ptr) + 1)
 }
 
+<<<<<<< HEAD
 pub unsafe fn print_memory(ptr: *const u8, n: usize)
 {
 	let mut i: usize = 0;
@@ -124,4 +125,58 @@ macro_rules! get_reg
 		core::arch::asm!(concat!("mov {}, ", $reg), out(reg) val);
 		val
 	}}
+
+}
+
+pub fn pow(n1: u64, n2: u64) -> u64
+{
+	let mut r = n1;
+
+	for _ in 1..n2
+	{
+		r = r * n1;
+	}
+
+	r
+}
+
+pub struct Bitmap
+{
+	pub buffer: &'static mut[u8],
+	pub size: usize,
+}
+
+impl Bitmap
+{
+	pub fn get(&self, index: usize) -> bool
+	{
+		let byte_index: usize = index / 8;
+		let bit_index: u8 = (index % 8).try_into().unwrap();
+		let bit_indexer: u8 = 0b10000000 >> bit_index;
+
+		if self.buffer[byte_index] & bit_indexer > 0
+		{
+			return true;
+		}
+		return false;
+	}
+	pub fn set(&mut self, index: usize, value: bool)
+	{
+		let byte_index: usize = index / 8;
+		let bit_index: u8 = (index % 8).try_into().unwrap();
+		let bit_indexer: u8 = 0b10000000 >> bit_index;
+
+		self.buffer[byte_index] &= !bit_indexer;
+		if value
+		{
+			self.buffer[byte_index] |= bit_indexer;
+		}
+	}
+	pub fn debug_print(&self)
+	{
+			for i in 0..self.size
+			{
+				crate::logln!("{}", self.get(i));
+			}
+	}
 }
