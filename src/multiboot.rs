@@ -5,6 +5,8 @@ use crate::ok_fail;
 use core::slice;
 use core::mem::size_of;
 
+use crate::memory;
+
 const BOOTLOADER_MAGIC: u32 = 0x36d76289;
 
 const MULTIBOOT_TAG_TYPE_END: u32				= 0;
@@ -78,17 +80,18 @@ const MULTIBOOT_MEMORY_ACPI_RECLAIMABLE: u32 = 3;
 const MULTIBOOT_MEMORY_NVS: u32 = 4;
 const MULTIBOOT_MEMORY_BADRAM: u32 = 5;
 #[repr(C)]
-#[derive(Debug)]
-struct MultibootMmapEntry
+#[derive(Debug, Copy, Clone)]
+pub struct MultibootMmapEntry
 {
-	addr: u64,
-	len: u64,
+	pub addr: u64,
+	pub len: u64,
 	tag_type: u32,
 	zero: u32
 }
 
 #[repr(C)]
-struct MultibootTagMmap
+#[derive(Debug)]
+pub struct MultibootTagMmap
 {
 
 	tag_type: u32,
@@ -100,7 +103,7 @@ struct MultibootTagMmap
 
 impl MultibootTagMmap
 {
-	fn entries(&self, number: usize) -> &'static [MultibootMmapEntry]
+	pub fn entries(&self, number: usize) -> &'static [MultibootMmapEntry]
 	{
 		unsafe
 		{
@@ -234,18 +237,13 @@ pub fn parse(address: u32) -> bool
 					logln!("[INFO] end of multiboot2 information structure");
 					break
 				},
-				MULTIBOOT_TAG_TYPE_BASIC_MEMINFO =>
-				{
-					let meminfo = tag as *const MultibootTagBasicMeminfo;
-					crate::logln!("\x1B[33mupper: {:#}\nlower:{:#}\x1B[39m", (*meminfo).mem_upper, (*meminfo).mem_lower);
-				}
 				MULTIBOOT_TAG_TYPE_MMAP =>
 				{
 					let mmap = tag as *const MultibootTagMmap;
+					let number = (*tag).size as usize / size_of::<MultibootMmapEntry>();
+					let memsize = memory::get_mem_size(mmap, number);
 
-					let number: usize = (*tag).size as usize / size_of::<MultibootMmapEntry>();
-
-					crate::logln!("\x1B[33mmmap: {:?}\x1B[39m", (*mmap).entries(number));
+					crate::logln!("mem size: {}Mo", (memsize / 1024) / 1024);
 				}
 				_ => {}//crate::println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
 			};
