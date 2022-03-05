@@ -1,5 +1,5 @@
 use crate::tty;
-use crate::utilities;
+use crate::tools;
 
 mod azerty;
 mod qwerty;
@@ -54,7 +54,7 @@ pub fn get_scancodes()
 	let mut scancode: u8 = 0;
 	loop
     {
-		let new_scancode = utilities::inb(KEYBOARD_DATA);
+		let new_scancode = tools::inb(KEYBOARD_DATA);
 
 		if new_scancode == scancode
 		{

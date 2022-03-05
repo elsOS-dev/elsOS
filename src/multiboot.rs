@@ -1,6 +1,6 @@
 use crate::log;
 use crate::logln;
-use crate::utilities;
+use crate::tools;
 use crate::ok_fail;
 use core::slice;
 use core::mem::size_of;
@@ -58,7 +58,7 @@ impl MultibootTagString
 	{
 		unsafe
 		{
-			utilities::from_c_str((&self.str_ptr as *const _) as *const u8)
+			tools::from_c_str((&self.str_ptr as *const _) as *const u8)
 		}
 	}
 }

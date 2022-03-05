@@ -5,7 +5,7 @@
 #![no_std]
 #![no_main]
 
-mod utilities;
+mod tools;
 mod vga;
 mod keyboard;
 mod tty;
