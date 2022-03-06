@@ -5,7 +5,8 @@ use crate::ok_fail;
 use core::slice;
 use core::mem::size_of;
 
-use crate::memory;
+pub static mut MULTIBOOT_MMAP: *const MultibootTagMmap = core::ptr::null();
+pub static mut MULTIBOOT_MMAP_ENTRIES: usize = 0;
 
 const BOOTLOADER_MAGIC: u32 = 0x36d76289;
 
@@ -239,11 +240,8 @@ pub fn parse(address: u32) -> bool
 				},
 				MULTIBOOT_TAG_TYPE_MMAP =>
 				{
-					let mmap = tag as *const MultibootTagMmap;
-					let number = (*tag).size as usize / size_of::<MultibootMmapEntry>();
-					let memsize = memory::get_mem_size(mmap, number);
-
-					crate::logln!("mem size: {}Mo", (memsize / 1024) / 1024);
+					MULTIBOOT_MMAP = tag as *const MultibootTagMmap;
+					MULTIBOOT_MMAP_ENTRIES = (*tag).size as usize / size_of::<MultibootMmapEntry>();
 				}
 				_ => {}//crate::println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
 			};

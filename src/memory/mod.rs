@@ -1,3 +1,5 @@
+pub mod pageframe;
+
 use core::ffi::c_void;
 use crate::multiboot::MultibootTagMmap;
 
@@ -5,14 +7,6 @@ extern "C"
 {
 	static _kernel_start: c_void;
 	static _kernel_end: c_void;
-}
-
-pub struct MemoryUsage
-{
-	pub free_mem: u32,
-	pub locked_mem: u32,
-	pub reserved_mem: u32,
-	pub unusable_mem: u32
 }
 
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> u64
@@ -24,7 +18,7 @@ pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> u64
 		{
 			return MEM_SIZE_BYTES;
 		}
-		// crate::logln!("\x1B[33mmmap: {:#x?}\x1B[39m", (*mmap).entries(size));
+		// crate::logln!("\x1B[33mmmap: {:#x?}\x1B[39m", (*mmap).entries(mmap_size));
 		for mmap_entry in (*mmap).entries(mmap_size)
 		{
 			MEM_SIZE_BYTES += mmap_entry.len as u64;
@@ -47,5 +41,6 @@ pub fn get_kernel_size() -> usize
 		kernel_end =  &_kernel_end as *const _ as usize;
 	}
 	let kernel_size = kernel_end - kernel_start;
+	crate::logln!("{:#x?} {:#x?}", kernel_start, kernel_end);
 	return kernel_size;
 }

@@ -178,4 +178,11 @@ impl Bitmap
 				crate::logln!("{}", self.get(i));
 			}
 	}
+	pub fn erase(&mut self)
+	{
+		for i in 0..self.size
+		{
+			self.set(i, false);
+		}
+	}
 }

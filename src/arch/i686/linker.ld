@@ -2,12 +2,12 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x00100000;
     .boot BLOCK(4K) : ALIGN(4K)
     {
         /* ensure that the multiboot header is at the beginning */
         KEEP(*(.multiboot_header))
     }
+    . = 0x00100000;
     .text BLOCK(4K) : ALIGN(4K)
     {
         _kernel_start = .;
