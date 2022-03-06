@@ -12,6 +12,7 @@ mod tty;
 mod multiboot;
 mod serial;
 mod gdt;
+mod memory;
 
 use core::panic::PanicInfo;
 
@@ -19,6 +20,9 @@ static VERSION: &str = env!("VERSION");
 static PATCHLEVEL: &str = env!("PATCHLEVEL");
 static SUBLEVEL: &str = env!("SUBLEVEL");
 static EXTRAVERSION: &str = env!("EXTRAVERSION");
+
+use crate::multiboot::MULTIBOOT_MMAP;
+use crate::multiboot::MULTIBOOT_MMAP_ENTRIES;
 
 pub struct Settings
 {
@@ -50,6 +54,8 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
 		logln!();
+		let mut alloc: memory::pageframe::PageFrameAllocator = memory::pageframe::PageFrameAllocator::new();
+		unsafe { alloc.read_grub_mmap(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES); }
 		tty::prompt();
 		keyboard::get_scancodes();
 	}
