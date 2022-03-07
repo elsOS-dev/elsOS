@@ -11,11 +11,44 @@ pub fn execute(command: &str)
 		"halt" | "exit" => halt(),
 		"reboot" => reboot(),
 		"scheen" => scheen(),
-		"pm" |"printmem" => printmem(),
-		"ps" |"printstack" => print_stack(),
+		"pm" => printmem_at(0 as *const u8, false),
+		"pb" => printmem_at(0 as *const u8, true),
+		"ps" => print_stack(),
+		"pt" => printtty(),
 		"panic" => panic(),
 		"" => {},
-		_ => crate::println!("{}: unknown command. Use help for more", command)
+		_ =>
+		{
+			if let Some(command_end) = command.find(' ')
+			{
+				let arg = &command[command_end + 1..];
+				let command = &command[..command_end];
+				match command
+				{
+					"pm" | "pb" =>
+					{
+						let address = u32::from_str_radix(arg, 16)
+													 .unwrap_or_else(|_|
+														{
+															crate::println!("invalid argument for {}: {}",
+																			command, arg);
+															0
+														});
+						match command
+						{
+							"pm" => printmem_at(address as *const u8, false),
+							"pb" => printmem_at(address as *const u8, true),
+							_ => {}
+						};
+					}
+					_ => crate::println!("{}: unknown or invalid command. Use help for more", command)
+				}
+			}
+			else
+			{
+				crate::println!("{}: unknown or invalid command. Use help for more", command);
+			}
+		}
 	};
 }
 
@@ -46,7 +79,7 @@ fn scheen()
 	crate::println!("yo yo des esch d'becht OS eh ?");
 }
 
-fn printmem()
+fn printtty()
 {
 	crate::println!("ok");
 	crate::serial_println!("==============");
@@ -55,6 +88,21 @@ fn printmem()
 		crate::serial_print!("{}", super::Tty::current().chars[i] as char);
 	}
 	crate::serial_println!("==============");
+}
+
+fn printmem_at(address: *const u8, binary: bool)
+{
+	unsafe
+	{
+		if binary
+		{
+			utilities::print_memory_bin(address, 256);
+		}
+		else
+		{
+			utilities::print_memory(address, 256);
+		}
+	}
 }
 
 fn print_stack()
@@ -78,6 +126,9 @@ fn help()
 	crate::println!("  halt | exit: stop the virtual machine (qemu only)");
 	crate::println!("  reboot:      reboot the machine");
 	crate::println!("Debug commands:");
-	crate::println!("  printmem | pm: print current tty buffer to serial");
-	crate::println!("  panic        : trigger a rust panic");
+	crate::println!("  pm <address>: print 256 bytes of memory at address (0 if not specified)");
+	crate::println!("  pb <address>: |-------------- same in binary");
+	crate::println!("  ps:           print stack");
+	crate::println!("  pt:           print current tty buffer to serial");
+	crate::println!("  panic:        trigger a rust panic");
 }
