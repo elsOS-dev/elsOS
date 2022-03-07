@@ -72,7 +72,7 @@ pub unsafe fn print_memory(ptr: *const u8, n: usize)
 	{
 		if i % 16 == 0
 		{
-			crate::log!("{:0x}:  ", ptr.add(i) as u32);
+			crate::log!("{:08x}: ", ptr.add(i) as u32);
 		}
 		crate::log!("{:02x?} ", *ptr.add(i));
 		i += 1;
@@ -90,6 +90,26 @@ pub unsafe fn print_memory(ptr: *const u8, n: usize)
 		else if i % 8 == 0
 		{
 			crate::log!("  ");
+		}
+	}
+	crate::logln!();
+}
+
+pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
+{
+	let mut i: usize = 0;
+
+	while i < n
+	{
+		if i % 4 == 0
+		{
+			crate::log!("{:08x}:     ", ptr.add(i) as u32);
+		}
+		crate::log!("{:08b}   ", *ptr.add(i));
+		i += 1;
+		if i % 4 == 0
+		{
+			crate::logln!();
 		}
 	}
 	crate::logln!();
