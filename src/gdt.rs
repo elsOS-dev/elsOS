@@ -1,3 +1,5 @@
+// using https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor to fill the values
+
 use core::mem::size_of;
 
 #[repr(C, packed)]
@@ -46,7 +48,7 @@ static mut GDT_TABLE: gdt = gdt
         limit0: 0xffff,
         base0: 0,
         base1: 0,
-        access_byte: 0x9a,
+        access_byte: 0b1001_1010,
         limit1_flags: 0xcf,
         base2: 0
     },
@@ -55,7 +57,7 @@ static mut GDT_TABLE: gdt = gdt
         limit0: 0xffff,
         base0: 0,
         base1: 0,
-        access_byte: 0x92,
+        access_byte: 0b1001_0010,
         limit1_flags: 0xcf,
         base2: 0
     },
@@ -64,7 +66,7 @@ static mut GDT_TABLE: gdt = gdt
 		limit0: 0xffff,
 		base0: 0,
 		base1: 0,
-		access_byte: 0x92,
+		access_byte: 0b1001_0110,
 		limit1_flags: 0xcf,
 		base2: 0
 	},
@@ -73,7 +75,7 @@ static mut GDT_TABLE: gdt = gdt
         limit0: 0xffff,
         base0: 0,
         base1: 0,
-        access_byte: 0x9a,
+        access_byte: 0b1111_1010,
         limit1_flags: 0xcf,
         base2: 0
     },
@@ -82,7 +84,7 @@ static mut GDT_TABLE: gdt = gdt
         limit0: 0xffff,
         base0: 0,
         base1: 0,
-        access_byte: 0x92,
+        access_byte: 0b1111_0010,
         limit1_flags: 0xcf,
         base2: 0
     },
@@ -91,7 +93,7 @@ static mut GDT_TABLE: gdt = gdt
         limit0: 0xffff,
         base0: 0,
         base1: 0,
-        access_byte: 0x92,
+        access_byte: 0b1111_0110,
         limit1_flags: 0xcf,
         base2: 0
     },
