@@ -127,7 +127,16 @@ macro_rules! get_reg
 
 }
 
-pub fn pow(n1: u64, n2: u64) -> u64
+#[macro_export]
+macro_rules! page_index
+{
+	($reg:expr) =>
+	{{
+		tools::divide_up($reg, 4096)
+	}}
+}
+
+pub fn pow(n1: usize, n2: usize) -> usize
 {
 	let mut r = n1;
 
@@ -139,10 +148,15 @@ pub fn pow(n1: u64, n2: u64) -> u64
 	r
 }
 
+pub fn divide_up(dividend: usize, divisor: usize) -> usize
+{
+	(dividend + divisor - 1) / divisor
+}
+
 pub struct Bitmap
 {
 	pub buffer: &'static mut[u8],
-	pub size: usize,
+	pub size: usize, // represents the number of bits, one byte = 8 bits
 }
 
 impl Bitmap
@@ -150,7 +164,7 @@ impl Bitmap
 	pub fn get(&self, index: usize) -> bool
 	{
 		let byte_index: usize = index / 8;
-		let bit_index: u8 = (index % 8).try_into().unwrap();
+		let bit_index: u8 = (index % 8) as u8;
 		let bit_indexer: u8 = 0b10000000 >> bit_index;
 
 		if self.buffer[byte_index] & bit_indexer > 0
@@ -162,7 +176,7 @@ impl Bitmap
 	pub fn set(&mut self, index: usize, value: bool)
 	{
 		let byte_index: usize = index / 8;
-		let bit_index: u8 = (index % 8).try_into().unwrap();
+		let bit_index: u8 = (index % 8) as u8;
 		let bit_indexer: u8 = 0b10000000 >> bit_index;
 
 		self.buffer[byte_index] &= !bit_indexer;

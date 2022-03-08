@@ -44,6 +44,8 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
+		let mut alloc: memory::pageframe::PageFrameAllocator = memory::pageframe::PageFrameAllocator::new();
+		unsafe { alloc.read_grub_mmap(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES); }
 		init_serial();
 		logln!("\n");
 		logln!("        :::      ::::::::    __       __       __ _  ____  ____  ");
@@ -54,8 +56,6 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
 		logln!();
-		let mut alloc: memory::pageframe::PageFrameAllocator = memory::pageframe::PageFrameAllocator::new();
-		unsafe { alloc.read_grub_mmap(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES); }
 		tty::prompt();
 		keyboard::get_scancodes();
 	}

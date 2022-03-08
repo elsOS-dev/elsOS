@@ -1,5 +1,6 @@
 use crate::multiboot::MultibootTagMmap;
 use crate::tools;
+use crate::page_index;
 
 use core::ffi::c_void;
 
@@ -11,10 +12,10 @@ extern "C"
 
 pub struct PageFrameAllocator
 {
-	pub free_mem: u64,
-	pub locked_mem: u32,
-	pub reserved_mem: u32,
-	pub unusable_mem: u32,
+	pub free_mem: usize,
+	pub locked_mem: usize,
+	pub reserved_mem: usize,
+	pub unusable_mem: u64,
 	initialized: bool,
 	bitmap: tools::Bitmap,
 }
@@ -37,43 +38,63 @@ impl PageFrameAllocator
 
 	pub fn read_grub_mmap(&mut self, mmap: *const MultibootTagMmap, mmap_size: usize)
 	{
-		let mut largest_free_mem_seg: u64 = 0;
-		let mut largest_free_mem_seg_size: u64 = 0;
+		let kernel_start: usize;
+		let kernel_end: usize;
 
 		if self.initialized
 		{
 			return ;
 		}
 		self.initialized = true;
+
+		crate::logln!("[INFO] initializing memory map...");
+		unsafe
+		{
+			kernel_start = &_kernel_start as *const _ as usize;
+			kernel_end =  &_kernel_end as *const _ as usize;
+		}
+		self.free_mem = crate::memory::get_mem_size(mmap, mmap_size);
+		crate::logln!("[INFO] found {}Ko of memory", self.free_mem / 1024);
+		self.init_bitmap(kernel_end + 1);
+		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
 			for entry in (*mmap).entries(mmap_size)
 			{
-				if entry.len > largest_free_mem_seg_size
+				if entry.tag_type != 1
 				{
-					largest_free_mem_seg_size = entry.len;
-					largest_free_mem_seg = entry.addr;
+					self.reserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
 				}
 			}
-			self.free_mem = crate::memory::get_mem_size(mmap, mmap_size);
-			self.init_bitmap(&_kernel_end as *const _ as usize + largest_free_mem_seg as usize + 1);
 		}
+		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
+		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size) / 8);
+		crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
+		crate::logln!("[INFO] reserved mem: {}Ko", self.reserved_mem / 1024);
 	}
 
+	fn reserve_mem(&mut self, index: usize, len: usize)
+	{
+		for i in 0..len
+		{
+			self.bitmap.set((index + i) as usize, true);
+			self.reserved_mem += 4096;
+		}
+	}
 	fn init_bitmap(&mut self, b: usize)
 	{
-		let bitmap_size = self.free_mem / 4096;
+		let bitmap_size = usize::MAX / 4096;
 
 		unsafe
 		{
 			self.bitmap = tools::Bitmap
 			{
-				buffer: core::slice::from_raw_parts_mut (b as *mut u8, (bitmap_size / 8) as usize + 1),
-				size: bitmap_size as usize + 1,
+				buffer: core::slice::from_raw_parts_mut (b as *mut u8, (bitmap_size / 8) + 8),
+				size: bitmap_size + 1,
 			};
+
 			self.bitmap.erase();
-			crate::logln!("{}", self.bitmap.size);
-			self.bitmap.debug_print();
+			// self.bitmap.debug_print();
 		}
 	}
 }

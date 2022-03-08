@@ -84,9 +84,11 @@ const MULTIBOOT_MEMORY_BADRAM: u32 = 5;
 #[derive(Debug, Copy, Clone)]
 pub struct MultibootMmapEntry
 {
-	pub addr: u64,
-	pub len: u64,
-	tag_type: u32,
+	pub addr: u32,
+	addr_upper: u32,
+	pub len: u32,
+	len_upper: u32,
+	pub tag_type: u32,
 	zero: u32
 }
 
