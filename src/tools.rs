@@ -185,12 +185,22 @@ impl Bitmap
 			self.buffer[byte_index] |= bit_indexer;
 		}
 	}
-	pub fn debug_print(&self)
+	pub fn debug_print(&self, len: usize)
 	{
+		if len == 0
+		{
 			for i in 0..self.size
 			{
 				crate::logln!("{}", self.get(i));
 			}
+		}
+		else
+		{
+			for i in 0..len
+			{
+				crate::logln!("{}", self.get(i));
+			}
+		}
 	}
 	pub fn erase(&mut self)
 	{

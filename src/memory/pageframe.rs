@@ -94,7 +94,7 @@ impl PageFrameAllocator
 			};
 
 			self.bitmap.erase();
-			// self.bitmap.debug_print();
+			// self.bitmap.debug_print(0);
 		}
 	}
 }
