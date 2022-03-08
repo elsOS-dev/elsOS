@@ -1,6 +1,7 @@
 use crate::multiboot::MultibootTagMmap;
 use crate::tools;
 use crate::page_index;
+use crate::memory::get_mem_size;
 
 use core::ffi::c_void;
 
@@ -32,7 +33,6 @@ impl PageFrameAllocator
 			unusable_mem: 0,
 			initialized: false,
 			bitmap: tools::Bitmap {buffer: &mut[] as &'static mut[u8], size: 0},
-
 		}
 	}
 
@@ -55,20 +55,21 @@ impl PageFrameAllocator
 		}
 		self.free_mem = crate::memory::get_mem_size(mmap, mmap_size);
 		crate::logln!("[INFO] found {}Ko of memory", self.free_mem / 1024);
-		self.init_bitmap(kernel_end + 1);
+		self.init_bitmap(kernel_end + 16384);
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
 			for entry in (*mmap).entries(mmap_size)
 			{
-				if entry.tag_type != 1
+				if entry.tag_type != 1 && entry.addr < get_mem_size(mmap, mmap_size) as u32
 				{
 					self.reserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
 				}
 			}
 		}
 		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
-		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size) / 8);
+		self.reserve_mem(page_index!(kernel_end),  page_index!(16384));
+		self.reserve_mem(page_index!(kernel_end + 16384),  page_index!(self.bitmap.size / 8));
 		crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
 		crate::logln!("[INFO] reserved mem: {}Ko", self.reserved_mem / 1024);
 	}
@@ -83,7 +84,7 @@ impl PageFrameAllocator
 	}
 	fn init_bitmap(&mut self, b: usize)
 	{
-		let bitmap_size = usize::MAX / 4096;
+		let bitmap_size = page_index!(self.free_mem);
 
 		unsafe
 		{
