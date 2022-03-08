@@ -11,19 +11,23 @@ extern "C"
 
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 {
-	let mut mem_size_bytes: u64 = 0;
+	static mut MEM_SIZE_BYTES: u64 = 0;
 	unsafe
 	{
+		if MEM_SIZE_BYTES > 0
+		{
+			return MEM_SIZE_BYTES as usize;
+		}
 		crate::logln!("\x1B[33mmmap: {:#x?}\x1B[39m", (*mmap).entries(mmap_size));
 		for mmap_entry in (*mmap).entries(mmap_size)
 		{
-			mem_size_bytes += mmap_entry.len as u64;
+			MEM_SIZE_BYTES += mmap_entry.len as u64;
 		}
-		if mem_size_bytes > usize::MAX as u64
+		if MEM_SIZE_BYTES > usize::MAX as u64
 		{
-			panic!("This version of ElsOS is in 32 bit, it only supports {}Mo of RAM, you have {}Mo installed", (usize::MAX / 1024) / 1024, (mem_size_bytes / 1024) / 1024);
+			panic!("This version of ElsOS is in 32 bit, it only supports {}Mo of RAM, you have {}Mo installed", (usize::MAX / 1024) / 1024, (MEM_SIZE_BYTES / 1024) / 1024);
 		}
-		return mem_size_bytes as usize;
+		return MEM_SIZE_BYTES as usize;
 	}
 }
 
