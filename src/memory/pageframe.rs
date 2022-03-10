@@ -55,7 +55,7 @@ impl PageFrameAllocator
 		}
 		self.free_mem = crate::memory::get_mem_size(mmap, mmap_size);
 		crate::logln!("[INFO] found {}Ko of memory", self.free_mem / 1024);
-		self.init_bitmap(kernel_end + 16384);
+		self.init_bitmap(kernel_end);
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
@@ -63,15 +63,17 @@ impl PageFrameAllocator
 			{
 				if entry.tag_type != 1 && entry.addr < get_mem_size(mmap, mmap_size) as u32
 				{
+					// reserve grub memmap entries marked as reserved
 					self.reserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
 				}
 			}
 		}
+		// reserve kernel space
 		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
-		self.reserve_mem(page_index!(kernel_end),  page_index!(16384));
-		self.reserve_mem(page_index!(kernel_end + 16384),  page_index!(self.bitmap.size / 8));
+		// reserve bitmap
+		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
 		crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
-		crate::logln!("[INFO] reserved mem: {}Ko", self.reserved_mem / 1024);
+		crate::logln!("[INFO] reserved mem: {}KiB", self.reserved_mem / 1024);
 	}
 
 	fn reserve_mem(&mut self, index: usize, len: usize)
