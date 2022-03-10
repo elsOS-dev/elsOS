@@ -29,5 +29,21 @@ SECTIONS
         *(COMMON)
         *(.bss)
     }
+    .stab BLOCK(4K) : ALIGN(4K)
+    {
+        *(.stab)
+    }
+    .stabstr BLOCK(4K) : ALIGN(4K)
+    {
+        *(.stabstr)
+    }
+    .note BLOCK(4K) : ALIGN(4K)
+    {
+        *(.note)
+    }
+    .comment BLOCK(4K) : ALIGN(4K)
+    {
+        *(.comment)
+    }
     _kernel_end = .;
 }
