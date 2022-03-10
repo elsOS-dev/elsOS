@@ -159,6 +159,22 @@ pub struct Bitmap
 	pub size: usize, // represents the number of bits, one byte = 8 bits
 }
 
+impl core::ops::Index<usize> for Bitmap
+{
+	type Output = bool;
+	fn index<'a>(&'a self, index: usize) -> &'a bool
+	{
+		if self.get(index)
+		{
+			return &true;
+		}
+		else
+		{
+			return &false;
+		}
+	}
+}
+
 impl Bitmap
 {
 	pub fn get(&self, index: usize) -> bool
@@ -173,6 +189,7 @@ impl Bitmap
 		}
 		return false;
 	}
+
 	pub fn set(&mut self, index: usize, value: bool)
 	{
 		let byte_index: usize = index / 8;
