@@ -132,7 +132,7 @@ impl PageFrameAllocator
 			self.bitmap = tools::Bitmap
 			{
 				buffer: core::slice::from_raw_parts_mut (b as *mut u8, (bitmap_size / 8) + 8),
-				size: bitmap_size + 1,
+				size: bitmap_size,
 			};
 
 			self.bitmap.erase();
