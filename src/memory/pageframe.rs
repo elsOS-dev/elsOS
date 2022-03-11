@@ -80,6 +80,20 @@ impl PageFrameAllocator
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
 	}
 
+	pub fn request_free_page(&mut self) -> usize
+	{
+		for i in 0..self.bitmap.size
+		{
+			if self.bitmap.get(i) == false
+			{
+				crate::logln!("locking page {}", i);
+				self.lock_page(i);
+				return i * 0x1000;
+			}
+		}
+		0
+	}
+
 	pub fn print_memusage(&self, level: usize)
 	{
 
@@ -122,6 +136,44 @@ impl PageFrameAllocator
 			self.free_mem += 4096;
 		}
 	}
+	fn lock_pages(&mut self, index: usize, len: usize)
+	{
+		for i in 0..len
+		{
+			self.lock_page(index + i);
+		}
+	}
+
+	fn lock_page(&mut self, index: usize)
+	{
+		self.bitmap.set(index, true);
+		self.locked_mem += 4096;
+		self.free_mem -= 4096;
+	}
+
+	pub fn unlock_page(&mut self, index: usize)
+	{
+		if self.bitmap[index] == true
+		{
+			crate::logln!("unlocking page {}", index);
+			self.bitmap.set(index, false);
+			self.free_mem += 4096;
+			self.locked_mem -= 4096;
+		}
+		else
+		{
+			crate::logln!("page {} already unlocked", index);
+		}
+	}
+
+	fn unlock_pages(&mut self, index: usize, len: usize)
+	{
+		for i in 0..len
+		{
+			self.unlock_page(index + i);
+		}
+	}
+
 	fn init_bitmap(&mut self, b: usize)
 	{
 		let bitmap_size = self.reserved_mem / 4096;
