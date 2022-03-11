@@ -71,11 +71,33 @@ impl PageFrameAllocator
 			}
 		}
 		// reserve kernel space
+		crate::logln!("reserving {} pages for kernel", page_index!(kernel_end - kernel_start));
 		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
+		crate::logln!("kernel end {:#x}", kernel_end);
+		crate::logln!("memory start {:#x}", kernel_end + self.bitmap.size / 8);
 		// reserve bitmap
+		crate::logln!("reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
-		crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
-		crate::logln!("[INFO] reserved mem: {}KiB", self.reserved_mem / 1024);
+	}
+
+	pub fn print_memusage(&self, level: usize)
+	{
+
+		crate::logln!("[INFO] free mem: {}KiB", self.free_mem / 1024);
+		crate::logln!("[INFO] used mem: {}KiB", self.locked_mem / 1024);
+		if level >= 1
+		{
+			crate::logln!("[INFO] reserved mem: {}KiB", self.reserved_mem / 1024);
+		}
+		if level >= 2
+		{
+			crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
+			crate::logln!("[INFO] used pages: {} pages", self.locked_mem / 4096);
+		}
+		if level >= 3
+		{
+			crate::logln!("excepted levels for print_memusage() are 0, 1 or 2.");
+		}
 	}
 
 	fn reserve_mem(&mut self, index: usize, len: usize)
@@ -103,6 +125,7 @@ impl PageFrameAllocator
 	fn init_bitmap(&mut self, b: usize)
 	{
 		let bitmap_size = self.reserved_mem / 4096;
+		crate::logln!("[INFO] bitmap location: {:#x}", b);
 
 		unsafe
 		{
@@ -113,7 +136,7 @@ impl PageFrameAllocator
 			};
 
 			self.bitmap.erase();
-			// self.bitmap.debug_print(0);
+			// self.bitmap.debug_print(256);
 		}
 	}
 }
