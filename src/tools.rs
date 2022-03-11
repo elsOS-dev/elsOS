@@ -223,7 +223,7 @@ impl Bitmap
 	{
 		for i in 0..self.size
 		{
-			self.set(i, false);
+			self.set(i, true);
 		}
 	}
 }

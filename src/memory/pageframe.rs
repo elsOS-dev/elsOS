@@ -53,18 +53,20 @@ impl PageFrameAllocator
 			kernel_start = &_kernel_start as *const _ as usize;
 			kernel_end =  &_kernel_end as *const _ as usize;
 		}
-		self.free_mem = crate::memory::get_mem_size(mmap, mmap_size);
-		crate::logln!("[INFO] found {}Ko of memory", self.free_mem / 1024);
+		self.reserved_mem = crate::memory::get_mem_size(mmap, mmap_size);
+		crate::logln!("[INFO] found {}KiB of memory", self.reserved_mem / 1024);
+		// initialise the bitmap according to mem size, and set every page as reserved
 		self.init_bitmap(kernel_end);
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
 			for entry in (*mmap).entries(mmap_size)
 			{
-				if entry.tag_type != 1 && entry.addr < get_mem_size(mmap, mmap_size) as u32
+				if (entry.tag_type == 1 && entry.addr < get_mem_size(mmap, mmap_size) as u32) && entry.addr != 0
 				{
-					// reserve grub memmap entries marked as reserved
-					self.reserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
+					// unreserve grub memmap entries marked as free except lower memory
+					crate::logln!("unreserving {} pages", page_index!(entry.len as usize));
+					self.unreserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
 				}
 			}
 		}
@@ -80,13 +82,27 @@ impl PageFrameAllocator
 	{
 		for i in 0..len
 		{
-			self.bitmap.set((index + i) as usize, true);
-			self.reserved_mem += 4096;
+			if self.bitmap[index + i] == false
+			{
+				self.bitmap.set(index + i, true);
+				self.reserved_mem += 4096;
+				self.free_mem -= 4096;
+			}
+		}
+	}
+
+	fn unreserve_mem(&mut self, index: usize, len: usize)
+	{
+		for i in 0..len
+		{
+			self.bitmap.set(index + i, false);
+			self.reserved_mem -= 4096;
+			self.free_mem += 4096;
 		}
 	}
 	fn init_bitmap(&mut self, b: usize)
 	{
-		let bitmap_size = page_index!(self.free_mem);
+		let bitmap_size = self.reserved_mem / 4096;
 
 		unsafe
 		{
