@@ -94,6 +94,19 @@ impl PageFrameAllocator
 		0
 	}
 
+	pub fn free_page(&mut self, address: usize)
+	{
+		let index = address / 0x1000;
+		if self.bitmap[index]
+		{
+			self.unlock_page(index);
+		}
+		else
+		{
+			crate::logln!("page at address {:#x} already freed", address);
+		}
+	}
+
 	pub fn print_memusage(&self, level: usize)
 	{
 
@@ -151,7 +164,7 @@ impl PageFrameAllocator
 		self.free_mem -= 4096;
 	}
 
-	pub fn unlock_page(&mut self, index: usize)
+	fn unlock_page(&mut self, index: usize)
 	{
 		if self.bitmap[index] == true
 		{
