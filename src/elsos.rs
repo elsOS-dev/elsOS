@@ -44,7 +44,7 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
-		let mut alloc: memory::pageframe::PageFrameAllocator = memory::pageframe::PageFrameAllocator::new();
+		let mut alloc: memory::pageframe::Allocator = memory::pageframe::Allocator::new();
 		unsafe { alloc.read_grub_mmap(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES); }
 		init_serial();
 		logln!("\n");
