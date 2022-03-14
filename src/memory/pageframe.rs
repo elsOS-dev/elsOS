@@ -11,7 +11,7 @@ extern "C"
 	static _kernel_end: c_void;
 }
 
-pub struct PageFrameAllocator
+pub struct Allocator
 {
 	pub free_mem: usize,
 	pub locked_mem: usize,
@@ -21,11 +21,11 @@ pub struct PageFrameAllocator
 	bitmap: tools::Bitmap,
 }
 
-impl PageFrameAllocator
+impl Allocator
 {
-	pub fn new() -> PageFrameAllocator
+	pub fn new() -> Allocator
 	{
-		PageFrameAllocator
+		Allocator
 		{
 			free_mem: 0,
 			locked_mem: 0,
