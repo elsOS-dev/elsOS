@@ -56,7 +56,7 @@ impl PageTableEntry
 	// to enable global pages.
 	pub fn get_global(&self) -> bool
 	{
-		((self.value << 23) >> 31) != 0
+		tools::get_bit_at(self.value, 8)
 	}
 	pub fn set_global(&mut self, value: bool)
 	{
@@ -69,7 +69,7 @@ impl PageTableEntry
 	// it is reserved and must be set to 0.
 	pub fn get_pat(&self) -> bool
 	{
-		((self.value << 24) >> 31) != 0
+		tools::get_bit_at(self.value, 7)
 	}
 	pub fn set_pat(&mut self, value: bool)
 	{
@@ -80,7 +80,7 @@ impl PageTableEntry
 	// 'Dirty' is used to determine whether a page has been written to.
 	pub fn get_dirty(&self) -> bool
 	{
-		((self.value << 25) >> 31) != 0
+		tools::get_bit_at(self.value, 6)
 	}
 	pub fn set_dirty(&mut self, value: bool)
 	{
@@ -94,7 +94,7 @@ impl PageTableEntry
 	// so that burden falls on the OS (if it needs this bit at all).
 	pub fn get_accessed(&self) -> bool
 	{
-		((self.value << 26) >> 31) != 0
+		tools::get_bit_at(self.value, 5)
 	}
 	pub fn set_accessed(&mut self, value: bool)
 	{
@@ -106,7 +106,7 @@ impl PageTableEntry
 	// cached. Otherwise, it will be.
 	pub fn get_pcd(&self) -> bool
 	{
-		((self.value << 27) >> 31) != 0
+		tools::get_bit_at(self.value, 4)
 	}
 	pub fn set_pcd(&mut self, value: bool)
 	{
@@ -119,7 +119,7 @@ impl PageTableEntry
 	// instead.
 	pub fn get_pwt(&self) -> bool
 	{
-		((self.value << 28) >> 31) != 0
+		tools::get_bit_at(self.value, 3)
 	}
 	pub fn set_pwt(&mut self, value: bool)
 	{
@@ -136,7 +136,7 @@ impl PageTableEntry
 	// bit in the relevant page directory entry as well as the page table entry
 	pub fn get_us(&self) -> bool
 	{
-		((self.value << 29) >> 31) != 0
+		tools::get_bit_at(self.value, 2)
 	}
 	pub fn set_us(&mut self, value: bool)
 	{
@@ -151,7 +151,7 @@ impl PageTableEntry
 	// the kernel (see Intel Manuals 3A 2-20).
 	pub fn get_rw(&self) -> bool
 	{
-		((self.value << 30) >> 31) != 0
+		tools::get_bit_at(self.value, 1)
 	}
 	pub fn set_rw(&mut self, value: bool)
 	{
@@ -166,7 +166,7 @@ impl PageTableEntry
 	// and the OS should handle it.
 	pub fn get_present(&self) -> bool
 	{
-		((self.value << 31) >> 31) != 0
+		tools::get_bit_at(self.value, 0)
 	}
 	pub fn set_present(&mut self, value: bool)
 	{
