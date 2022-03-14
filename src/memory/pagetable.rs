@@ -1,3 +1,5 @@
+use crate::tools;
+
 pub struct PageTableEntry
 {
 	pub value: u32
@@ -31,10 +33,21 @@ impl PageTableEntry
 		self.value >> 12
 	}
 
+	pub fn set_addr(&mut self, addr: u32)
+	{
+		self.value &= 0xfff;
+		self.value |= addr;
+	}
+
 	// Bits 11-9 are available for us to do whatever we want.
 	pub fn get_flags(&self) -> u8
 	{
 		((self.value << 20) >> 29) as u8
+	}
+	pub fn set_flags(&mut self, flags: u8)
+	{
+		self.value &= 0b1111_1111_1111_1111_1111_1000_1111_1111;
+		self.value |= (flags as u32) << 8;
 	}
 
 	// Bit 8
@@ -43,7 +56,11 @@ impl PageTableEntry
 	// to enable global pages.
 	pub fn get_global(&self) -> bool
 	{
-	    ((self.value << 23) >> 31) != 0
+		((self.value << 23) >> 31) != 0
+	}
+	pub fn set_global(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 8);
 	}
 
 	// Bit 7
@@ -54,12 +71,20 @@ impl PageTableEntry
 	{
 		((self.value << 24) >> 31) != 0
 	}
+	pub fn set_pat(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 7);
+	}
 
 	// Bit 6
 	// 'Dirty' is used to determine whether a page has been written to.
 	pub fn get_dirty(&self) -> bool
 	{
 		((self.value << 25) >> 31) != 0
+	}
+	pub fn set_dirty(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 6);
 	}
 
 	// Bit 5
@@ -69,7 +94,11 @@ impl PageTableEntry
 	// so that burden falls on the OS (if it needs this bit at all).
 	pub fn get_accessed(&self) -> bool
 	{
-	    ((self.value << 26) >> 31) != 0
+		((self.value << 26) >> 31) != 0
+	}
+	pub fn set_accessed(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 5);
 	}
 
 	// Bit 4
@@ -79,6 +108,10 @@ impl PageTableEntry
 	{
 		((self.value << 27) >> 31) != 0
 	}
+	pub fn set_pcd(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 4);
+	}
 
 	// Bit 3
 	// PWT, controls Write-Through' abilities of the page. If the bit is set,
@@ -87,6 +120,10 @@ impl PageTableEntry
 	pub fn get_pwt(&self) -> bool
 	{
 		((self.value << 28) >> 31) != 0
+	}
+	pub fn set_pwt(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 3);
 	}
 
 	// Bit 2
@@ -101,6 +138,10 @@ impl PageTableEntry
 	{
 		((self.value << 29) >> 31) != 0
 	}
+	pub fn set_us(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 2);
+	}
 
 	// Bit 1
 	// The 'Read/Write' permissions flag. If the bit is set, the page is 
@@ -112,6 +153,10 @@ impl PageTableEntry
 	{
 		((self.value << 30) >> 31) != 0
 	}
+	pub fn set_rw(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 1);
+	}
 
 	// Bit 0
 	// If the bit is set, the page is actually in physical memory at the moment.
@@ -122,5 +167,9 @@ impl PageTableEntry
 	pub fn get_present(&self) -> bool
 	{
 		((self.value << 31) >> 31) != 0
+	}
+	pub fn set_present(&mut self, value: bool)
+	{
+		tools::set_bit(&mut self.value, value, 0);
 	}
 }

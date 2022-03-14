@@ -227,3 +227,15 @@ impl Bitmap
 		}
 	}
 }
+
+pub fn set_bit(var: &mut u32, value: bool, bit: u8)
+{
+	if value
+	{
+		*var |= (value as u32) << bit;
+	}
+	else
+	{
+		*var &= !(!value as u32) << bit;
+	}
+}
