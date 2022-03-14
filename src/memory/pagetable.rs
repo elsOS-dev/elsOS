@@ -3,6 +3,26 @@ pub struct PageTableEntry
 	pub value: u32
 }
 
+impl core::fmt::Debug for PageTableEntry
+{
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+	{
+		f.debug_struct("PageDirectoryEntry")
+		.field("addr", &self.get_addr())
+		.field("flags", &self.get_flags())
+		.field("global", &self.get_global())
+		.field("pat", &self.get_pat())
+		.field("dirty", &self.get_dirty())
+		.field("accessed", &self.get_accessed())
+		.field("pcd", &self.get_pcd())
+		.field("pwt", &self.get_pwt())
+		.field("us", &self.get_us())
+		.field("rw", &self.get_rw())
+		.field("present", &self.get_present())
+		.finish()
+	}
+}
+
 impl PageTableEntry
 {
 	// Bits 31-12 represents the address to the PageTableEntry.
