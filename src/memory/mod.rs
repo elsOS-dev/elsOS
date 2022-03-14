@@ -1,4 +1,6 @@
 pub mod pageframe;
+mod pagedirectory;
+mod pagetable;
 
 use core::ffi::c_void;
 use crate::multiboot::MultibootTagMmap;
