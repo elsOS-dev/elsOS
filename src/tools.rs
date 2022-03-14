@@ -38,9 +38,9 @@ pub fn outb(port: u32, value: u8)
 	}
 }
 
-pub fn get_bit_at(input: u8, n: u8) -> bool
+pub fn get_bit_at(input: u32, n: u8) -> bool
 {
-	if n < 8
+	if n < 32
 	{
 		return input & (1 << n) != 0;
 	}
