@@ -1,5 +1,5 @@
 use crate::multiboot::MultibootTagMmap;
-use crate::tools;
+use crate::ferramenta;
 use crate::page_index;
 use crate::memory::get_mem_size;
 
@@ -18,7 +18,7 @@ pub struct Allocator
 	pub reserved_mem: usize,
 	pub unusable_mem: u64,
 	initialized: bool,
-	bitmap: tools::Bitmap,
+	bitmap: ferramenta::Bitmap,
 }
 
 impl Allocator
@@ -32,7 +32,7 @@ impl Allocator
 			reserved_mem: 0,
 			unusable_mem: 0,
 			initialized: false,
-			bitmap: tools::Bitmap {buffer: &mut[] as &'static mut[u8], size: 0},
+			bitmap: ferramenta::Bitmap {buffer: &mut[] as &'static mut[u8], size: 0},
 		}
 	}
 
@@ -56,7 +56,7 @@ impl Allocator
 		self.reserved_mem = crate::memory::get_mem_size(mmap, mmap_size);
 		crate::logln!("[INFO] found {}KiB of memory", self.reserved_mem / 1024);
 		// initialise the bitmap according to mem size, and set every page as reserved
-		self.init_bitmap(tools::align(kernel_end, 0x1000));
+		self.init_bitmap(ferramenta::align(kernel_end, 0x1000));
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
@@ -194,7 +194,7 @@ impl Allocator
 
 		unsafe
 		{
-			self.bitmap = tools::Bitmap
+			self.bitmap = ferramenta::Bitmap
 			{
 				buffer: core::slice::from_raw_parts_mut (b as *mut u8, (bitmap_size / 8) + 8),
 				size: bitmap_size,

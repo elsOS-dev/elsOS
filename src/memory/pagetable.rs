@@ -1,4 +1,4 @@
-use crate::tools;
+use crate::ferramenta;
 
 pub struct PageTableEntry
 {
@@ -57,11 +57,11 @@ impl PageTableEntry
 	// to enable global pages.
 	pub fn get_global(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 8)
+		ferramenta::get_bit_at(self.value, 8)
 	}
 	pub fn set_global(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 8);
+		ferramenta::set_bit(&mut self.value, value, 8);
 	}
 
 	// Bit 7
@@ -70,22 +70,22 @@ impl PageTableEntry
 	// it is reserved and must be set to 0.
 	pub fn get_pat(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 7)
+		ferramenta::get_bit_at(self.value, 7)
 	}
 	pub fn set_pat(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 7);
+		ferramenta::set_bit(&mut self.value, value, 7);
 	}
 
 	// Bit 6
 	// 'Dirty' is used to determine whether a page has been written to.
 	pub fn get_dirty(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 6)
+		ferramenta::get_bit_at(self.value, 6)
 	}
 	pub fn set_dirty(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 6);
+		ferramenta::set_bit(&mut self.value, value, 6);
 	}
 
 	// Bit 5
@@ -95,11 +95,11 @@ impl PageTableEntry
 	// so that burden falls on the OS (if it needs this bit at all).
 	pub fn get_accessed(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 5)
+		ferramenta::get_bit_at(self.value, 5)
 	}
 	pub fn set_accessed(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 5);
+		ferramenta::set_bit(&mut self.value, value, 5);
 	}
 
 	// Bit 4
@@ -107,11 +107,11 @@ impl PageTableEntry
 	// cached. Otherwise, it will be.
 	pub fn get_pcd(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 4)
+		ferramenta::get_bit_at(self.value, 4)
 	}
 	pub fn set_pcd(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 4);
+		ferramenta::set_bit(&mut self.value, value, 4);
 	}
 
 	// Bit 3
@@ -120,11 +120,11 @@ impl PageTableEntry
 	// instead.
 	pub fn get_pwt(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 3)
+		ferramenta::get_bit_at(self.value, 3)
 	}
 	pub fn set_pwt(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 3);
+		ferramenta::set_bit(&mut self.value, value, 3);
 	}
 
 	// Bit 2
@@ -137,11 +137,11 @@ impl PageTableEntry
 	// bit in the relevant page directory entry as well as the page table entry
 	pub fn get_us(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 2)
+		ferramenta::get_bit_at(self.value, 2)
 	}
 	pub fn set_us(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 2);
+		ferramenta::set_bit(&mut self.value, value, 2);
 	}
 
 	// Bit 1
@@ -152,11 +152,11 @@ impl PageTableEntry
 	// the kernel (see Intel Manuals 3A 2-20).
 	pub fn get_rw(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 1)
+		ferramenta::get_bit_at(self.value, 1)
 	}
 	pub fn set_rw(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 1);
+		ferramenta::set_bit(&mut self.value, value, 1);
 	}
 
 	// Bit 0
@@ -167,10 +167,10 @@ impl PageTableEntry
 	// and the OS should handle it.
 	pub fn get_present(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 0)
+		ferramenta::get_bit_at(self.value, 0)
 	}
 	pub fn set_present(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 0);
+		ferramenta::set_bit(&mut self.value, value, 0);
 	}
 }

@@ -1,4 +1,4 @@
-use crate::tools;
+use crate::ferramenta;
 
 pub struct PageDirectoryEntry
 {
@@ -56,22 +56,22 @@ impl PageDirectoryEntry
 	// require PSE to be enabled. In our case, it will be 0.
 	pub fn get_ps(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 7)
+		ferramenta::get_bit_at(self.value, 7)
 	}
 	pub fn set_ps(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 7);
+		ferramenta::set_bit(&mut self.value, value, 7);
 	}
 
 
 	// Bit 6 is available for us to do whatever we want.
 	pub fn get_flag2(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 6)
+		ferramenta::get_bit_at(self.value, 6)
 	}
 	pub fn set_flag2(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 6);
+		ferramenta::set_bit(&mut self.value, value, 6);
 	}
 
 	// Bit 5
@@ -81,11 +81,11 @@ impl PageDirectoryEntry
 	// so that burden falls on the OS (if it needs this bit at all).
 	pub fn get_accessed(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 5)
+		ferramenta::get_bit_at(self.value, 5)
 	}
 	pub fn set_accessed(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 5);
+		ferramenta::set_bit(&mut self.value, value, 5);
 	}
 
 	// Bit 4
@@ -93,11 +93,11 @@ impl PageDirectoryEntry
 	// cached. Otherwise, it will be.
 	pub fn get_pcd(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 4)
+		ferramenta::get_bit_at(self.value, 4)
 	}
 	pub fn set_pcd(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 4);
+		ferramenta::set_bit(&mut self.value, value, 4);
 	}
 
 	// Bit 3
@@ -106,11 +106,11 @@ impl PageDirectoryEntry
 	// instead.
 	pub fn get_pwt(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 3)
+		ferramenta::get_bit_at(self.value, 3)
 	}
 	pub fn set_pwt(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 3);
+		ferramenta::set_bit(&mut self.value, value, 3);
 	}
 
 	// Bit 2
@@ -123,11 +123,11 @@ impl PageDirectoryEntry
 	// bit in the relevant page directory entry as well as the page table entry
 	pub fn get_us(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 2)
+		ferramenta::get_bit_at(self.value, 2)
 	}
 	pub fn set_us(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 2);
+		ferramenta::set_bit(&mut self.value, value, 2);
 	}
 
 	// Bit 1
@@ -138,11 +138,11 @@ impl PageDirectoryEntry
 	// the kernel (see Intel Manuals 3A 2-20).
 	pub fn get_rw(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 1)
+		ferramenta::get_bit_at(self.value, 1)
 	}
 	pub fn set_rw(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 1);
+		ferramenta::set_bit(&mut self.value, value, 1);
 	}
 
 	// Bit 0
@@ -153,10 +153,10 @@ impl PageDirectoryEntry
 	// and the OS should handle it.
 	pub fn get_present(&self) -> bool
 	{
-		tools::get_bit_at(self.value, 0)
+		ferramenta::get_bit_at(self.value, 0)
 	}
 	pub fn set_present(&mut self, value: bool)
 	{
-		tools::set_bit(&mut self.value, value, 0);
+		ferramenta::set_bit(&mut self.value, value, 0);
 	}
 }
