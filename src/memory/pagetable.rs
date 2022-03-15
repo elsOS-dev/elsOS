@@ -10,6 +10,7 @@ impl core::fmt::Debug for PageTableEntry
 	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 	{
 		f.debug_struct("PageDirectoryEntry")
+		.field("value", &self.value)
 		.field("addr", &self.get_addr())
 		.field("flags", &self.get_flags())
 		.field("global", &self.get_global())
