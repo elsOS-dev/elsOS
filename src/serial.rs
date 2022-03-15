@@ -1,5 +1,5 @@
 use core::fmt;
-use crate::tools::{inb, outb};
+use crate::ferramenta::{inb, outb};
 
 #[macro_export]
 macro_rules! serial_print

@@ -1,6 +1,6 @@
 use crate::log;
 use crate::logln;
-use crate::tools;
+use crate::ferramenta;
 use crate::ok_fail;
 use core::slice;
 use core::mem::size_of;
@@ -61,7 +61,7 @@ impl MultibootTagString
 	{
 		unsafe
 		{
-			tools::from_c_str((&self.str_ptr as *const _) as *const u8)
+			ferramenta::from_c_str((&self.str_ptr as *const _) as *const u8)
 		}
 	}
 }
@@ -248,7 +248,7 @@ pub fn parse(address: u32) -> bool
 				_ => {}//crate::println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
 			};
 
-			address += tools::align((*tag).size as usize, 8) as u32;
+			address += ferramenta::align((*tag).size as usize, 8) as u32;
 		}
 	}
 

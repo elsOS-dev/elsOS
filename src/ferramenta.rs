@@ -132,7 +132,7 @@ macro_rules! page_index
 {
 	($reg:expr) =>
 	{{
-		tools::divide_up($reg, 4096)
+		ferramenta::divide_up($reg, 4096)
 	}}
 }
 
