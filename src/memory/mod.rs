@@ -50,3 +50,34 @@ pub fn get_largest_mem_seg(mmap: *const MultibootTagMmap, mmap_size: usize) -> u
 	}
 	largest_free_mem_seg
 }
+
+pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
+{
+	let pd_ptr: usize;
+	let pt1_ptr: usize;
+	let mut alloc: pageframe::Allocator = pageframe::Allocator::new();
+
+	alloc.read_grub_mmap(mmap, mmap_size);
+	pd_ptr = alloc.request_free_page();
+	pt1_ptr = alloc.request_free_page();
+	create_pd(pd_ptr, pt1_ptr);
+}
+
+fn create_pd(addr: usize, pt1_addr: usize)
+{
+	let pd: &'static mut [pagedirectory::PageDirectoryEntry];
+	let pt1: &'static mut [pagetable::PageTableEntry];
+
+	pd = unsafe{ core::slice::from_raw_parts_mut(addr as *mut pagedirectory::PageDirectoryEntry, 1024) };
+	pt1 = unsafe{ core::slice::from_raw_parts_mut(pt1_addr as *mut pagetable::PageTableEntry, 1024) };
+	for d in &mut *pd
+	{
+		d.value = 0x00000002;
+	}
+	for (i, t) in &mut (*pt1).iter_mut().enumerate()
+	{
+		t.value = ((i * 0x1000) | 3) as u32;
+	}
+	pd[0].set_addr(pt1_addr as u32);
+	crate::logln!("\x1b[31m{:#x?}\x1b[39m", pt1[0]);
+}
