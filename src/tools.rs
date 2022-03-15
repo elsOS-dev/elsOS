@@ -239,3 +239,8 @@ pub fn set_bit(var: &mut u32, value: bool, bit: u8)
 		*var &= !(!value as u32) << bit;
 	}
 }
+
+pub fn align(val: usize, bound: usize) -> usize
+{
+	val + bound - 1 & !(bound - 1)
+}

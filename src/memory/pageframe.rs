@@ -56,7 +56,7 @@ impl Allocator
 		self.reserved_mem = crate::memory::get_mem_size(mmap, mmap_size);
 		crate::logln!("[INFO] found {}KiB of memory", self.reserved_mem / 1024);
 		// initialise the bitmap according to mem size, and set every page as reserved
-		self.init_bitmap(kernel_end);
+		self.init_bitmap(tools::align(kernel_end, 0x1000));
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
 		unsafe
 		{
@@ -74,7 +74,7 @@ impl Allocator
 		crate::logln!("reserving {} pages for kernel", page_index!(kernel_end - kernel_start));
 		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
 		crate::logln!("kernel end {:#x}", kernel_end);
-		crate::logln!("memory start {:#x}", kernel_end + self.bitmap.size / 8);
+		crate::logln!("memory start {:#x}", (self.bitmap.buffer as *const _ as *const usize as usize) + self.bitmap.buffer.len());
 		// reserve bitmap
 		crate::logln!("reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));

@@ -248,7 +248,7 @@ pub fn parse(address: u32) -> bool
 				_ => {}//crate::println!("found tag of type {} and size {}", type_name((*tag).tag_type), (*tag).size)
 			};
 
-			address += ((*tag).size + 7) & !7;
+			address += tools::align((*tag).size as usize, 8) as u32;
 		}
 	}
 
