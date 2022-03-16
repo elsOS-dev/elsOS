@@ -11,6 +11,8 @@ extern "C"
 	static _kernel_end: c_void;
 }
 
+static PAGE_SIZE: usize = 4096;
+
 pub struct Allocator
 {
 	pub free_mem: usize,
@@ -118,8 +120,8 @@ impl Allocator
 		}
 		if level >= 2
 		{
-			crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / 4096);
-			crate::logln!("[INFO] used pages: {} pages", self.locked_mem / 4096);
+			crate::logln!("[INFO] reserved pages: {} pages", self.reserved_mem / PAGE_SIZE);
+			crate::logln!("[INFO] used pages: {} pages", self.locked_mem / PAGE_SIZE);
 		}
 		if level >= 3
 		{
@@ -134,8 +136,8 @@ impl Allocator
 			if self.bitmap[index + i] == false
 			{
 				self.bitmap.set(index + i, true);
-				self.reserved_mem += 4096;
-				self.free_mem -= 4096;
+				self.reserved_mem += PAGE_SIZE;
+				self.free_mem -= PAGE_SIZE;
 			}
 		}
 	}
@@ -145,8 +147,8 @@ impl Allocator
 		for i in 0..len
 		{
 			self.bitmap.set(index + i, false);
-			self.reserved_mem -= 4096;
-			self.free_mem += 4096;
+			self.reserved_mem -= PAGE_SIZE;
+			self.free_mem += PAGE_SIZE;
 		}
 	}
 	fn lock_pages(&mut self, index: usize, len: usize)
@@ -159,9 +161,12 @@ impl Allocator
 
 	fn lock_page(&mut self, index: usize)
 	{
-		self.bitmap.set(index, true);
-		self.locked_mem += 4096;
-		self.free_mem -= 4096;
+		if self.bitmap[index] == false
+		{
+			self.bitmap.set(index, true);
+			self.locked_mem += PAGE_SIZE;
+			self.free_mem -= PAGE_SIZE;
+		}
 	}
 
 	fn unlock_page(&mut self, index: usize)
@@ -170,8 +175,8 @@ impl Allocator
 		{
 			crate::logln!("unlocking page {}", index);
 			self.bitmap.set(index, false);
-			self.free_mem += 4096;
-			self.locked_mem -= 4096;
+			self.free_mem += PAGE_SIZE;
+			self.locked_mem -= PAGE_SIZE;
 		}
 		else
 		{
@@ -189,7 +194,7 @@ impl Allocator
 
 	fn init_bitmap(&mut self, b: usize)
 	{
-		let bitmap_size = self.reserved_mem / 4096;
+		let bitmap_size = self.reserved_mem / PAGE_SIZE;
 		crate::logln!("[INFO] bitmap location: {:#x}", b);
 
 		unsafe
