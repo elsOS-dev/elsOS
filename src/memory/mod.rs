@@ -61,6 +61,14 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	pd_ptr = alloc.request_free_page();
 	pt1_ptr = alloc.request_free_page();
 	create_pd(pd_ptr, pt1_ptr);
+	crate::logln!("test");
+}
+
+
+extern "C"
+{
+	fn load_page_directory(address: *const u8);
+	fn enable_paging();
 }
 
 fn create_pd(addr: usize, pt1_addr: usize)
@@ -81,6 +89,12 @@ fn create_pd(addr: usize, pt1_addr: usize)
 	pd[0].set_addr(pt1_addr as u32);
 	id_paging(pt1);
 	crate::logln!("\x1b[31m{:#x?}\x1b[39m", pt1[0]);
+	unsafe
+	{
+		crate::logln!("{:?}", &pd as *const _ as *const u8);
+		load_page_directory(&pd as *const _ as *const u8);
+		enable_paging();
+	}
 }
 
 // mapping the first page table to physical memory.
