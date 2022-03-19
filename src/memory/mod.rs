@@ -79,5 +79,17 @@ fn create_pd(addr: usize, pt1_addr: usize)
 		t.value = ((i * 0x1000) | 3) as u32;
 	}
 	pd[0].set_addr(pt1_addr as u32);
+	id_paging(pt1);
 	crate::logln!("\x1b[31m{:#x?}\x1b[39m", pt1[0]);
+}
+
+// mapping the first page table to physical memory.
+fn id_paging(start: &mut [pagetable::PageTableEntry])
+{
+	let mut block: usize = 0;
+	for table in start
+	{
+		table.set_addr((block) as u32);
+		block += 0x1000;
+	}
 }
