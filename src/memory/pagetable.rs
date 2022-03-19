@@ -1,5 +1,6 @@
 use crate::ferramenta;
 
+#[repr(C)]
 pub struct PageTableEntry
 {
 	pub value: u32
@@ -31,7 +32,7 @@ impl PageTableEntry
 	// Bits 31-12 represents the address to the PageTableEntry.
 	pub fn get_addr(&self) -> u32
 	{
-		self.value >> 12
+		self.value & 0xfffff000
 	}
 
 	pub fn set_addr(&mut self, addr: u32)
