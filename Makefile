@@ -10,67 +10,76 @@ ARCH=i686
 KERNEL=build/elsos-$(ARCH).bin
 ISO=build/elsos-$(ARCH).iso
 TARGET=$(ARCH)-elsos
-RUST_OS=target/$(TARGET)/$(DEBUG_RELEASE)/libelsos.a
+RUST_KERNEL=target/$(TARGET)/$(DEBUG_RELEASE)/libelsos.a
 
 LD=$(ARCH)-elf-ld
 CC=$(ARCH)-elf-gcc
+AR=$(ARCH)-elf-ar
 
 CFLAGS=-m32 -std=gnu99 -ffreestanding -Wall -Wextra -c
+ARFLAGS=rcs
 
 export CFLAGS
 export CC
 
-LD_SCRIPT=src/arch/$(ARCH)/linker.ld
+LD_SCRIPT=linkers/$(ARCH).ld
 GRUB_CFG=grub/grub.cfg
+
 ASM_SRC=$(wildcard src/arch/$(ARCH)/*.asm)
 ASM_OBJ=$(subst src/, build/, ${ASM_SRC:.asm=.o})
 
-.PHONY: all clean run iso kernel
+LIBC_SRC=$(wildcard src/libc/*.c)
+LIBC_OBJ=$(subst src/, build/, ${LIBC_SRC:.c=.o})
+LIBC_A=build/libc/libc.a
+
+.PHONY: all clean run iso kernel libc
 
 all: $(KERNEL)
 
 run: $(ISO)
-	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio
+	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio
 
 rund: $(ISO)
-	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int
+	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int
 
 rundd: $(ISO)
-	@qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int -s -S
+	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int -s -S
 
 iso: $(ISO)
 
 $(ISO): $(KERNEL) $(GRUB_CFG)
-	@mkdir -p build/iso/boot/grub
-	@cp $(KERNEL) build/iso/boot/elsos.bin
-	@cp $(GRUB_CFG) build/iso/boot/grub
-	@grub-mkrescue -o $(ISO) build/iso 2> /dev/null
-	@rm -r build/iso
+	mkdir -p build/iso/boot/grub
+	cp $(KERNEL) build/iso/boot/elsos.bin
+	cp $(GRUB_CFG) build/iso/boot/grub
+	grub-mkrescue -o $(ISO) build/iso 2> /dev/null
+	rm -r build/iso
 
-libc: libc.a
+libc: $(LIBC_A)
 
-libc.a:
-	@make -C src/libc
-	@cp src/libc/libc.a .
+$(LIBC_A): $(LIBC_OBJ)
+	$(AR) $(ARFLAGS) $@ $(LIBC_OBJ)
 
-$(KERNEL): kernel $(RUST_OS) $(ASM_OBJ) $(LD_SCRIPT)
-	$(LD) -n --gc-sections -T $(LD_SCRIPT) -o $(KERNEL) $(ASM_OBJ) $(RUST_OS)
+$(KERNEL): $(ASM_OBJ) $(RUST_KERNEL) $(LD_SCRIPT)
+	$(LD) -n --gc-sections -T $(LD_SCRIPT) -o $(KERNEL) $(ASM_OBJ) $(RUST_KERNEL)
 
-kernel: libc
+$(RUST_KERNEL): libc
 	cargo +nightly build --target $(TARGET).json
+
+kernel: $(RUST_KERNEL)
 
 clippy: libc
 	cargo +nightly clippy --target $(TARGET).json
 
-# compile assembly files
 build/arch/$(ARCH)/%.o: src/arch/$(ARCH)/%.asm
 	@mkdir -p $(shell dirname $@)
-	@nasm -f elf32 $< -o $@
+	nasm -f elf32 $< -o $@
+
+build/libc/%.o: src/libc/%.c
+	@mkdir -p $(shell dirname $@)
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	@rm -rf build
-	@rm -f libc.a
-	make -C src/libc clean
+	rm -rf build
 
 mrproper: clean
 	cargo clean
