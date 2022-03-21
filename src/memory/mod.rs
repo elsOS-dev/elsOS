@@ -1,15 +1,7 @@
-pub mod pageframe;
-mod pagedirectory;
-mod pagetable;
+mod pageframe;
+mod page;
 
-use core::ffi::c_void;
 use crate::multiboot::MultibootTagMmap;
-
-extern "C"
-{
-	static _kernel_start: c_void;
-	static _kernel_end: c_void;
-}
 
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 {
@@ -33,24 +25,6 @@ pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 	}
 }
 
-pub fn get_largest_mem_seg(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
-{
-	let mut largest_free_mem_seg: usize = 0;
-	let mut largest_free_mem_seg_size: usize = 0;
-	unsafe
-	{
-		for entry in (*mmap).entries(mmap_size)
-		{
-			if entry.len as usize > largest_free_mem_seg_size
-			{
-				largest_free_mem_seg_size = entry.len as usize;
-				largest_free_mem_seg = entry.addr as usize;
-			}
-		}
-	}
-	largest_free_mem_seg
-}
-
 pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 {
 	let pd_ptr: usize;
@@ -64,20 +38,19 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	crate::logln!("test");
 }
 
-
 extern "C"
 {
-	fn load_page_directory(address: *const u8);
+	fn load_page_directory(address: *const page::DirectoryEntry);
 	fn enable_paging();
 }
 
 fn create_pd(addr: usize, pt1_addr: usize)
 {
-	let pd: &'static mut [pagedirectory::PageDirectoryEntry];
-	let pt1: &'static mut [pagetable::PageTableEntry];
+	let pd: &'static mut [page::DirectoryEntry];
+	let pt1: &'static mut [page::TableEntry];
 
-	pd = unsafe{ core::slice::from_raw_parts_mut(addr as *mut pagedirectory::PageDirectoryEntry, 1024) };
-	pt1 = unsafe{ core::slice::from_raw_parts_mut(pt1_addr as *mut pagetable::PageTableEntry, 1024) };
+	pd = unsafe{ core::slice::from_raw_parts_mut(addr as *mut page::DirectoryEntry, 1024) };
+	pt1 = unsafe{ core::slice::from_raw_parts_mut(pt1_addr as *mut page::TableEntry, 1024) };
 	for d in &mut *pd
 	{
 		d.value = 0x00000002;
@@ -92,14 +65,14 @@ fn create_pd(addr: usize, pt1_addr: usize)
 	crate::logln!("\x1b[31m{:#x?}\x1b[39m", pt1[0]);
 	unsafe
 	{
-		crate::logln!("{:?}", addr as *const u8);
-		load_page_directory(addr as *const u8);
+		crate::logln!("{:?}", addr as *const page::DirectoryEntry);
+		load_page_directory(addr as *const page::DirectoryEntry);
 		enable_paging();
 	}
 }
 
 // mapping the first page table to physical memory.
-fn id_paging(start: &mut [pagetable::PageTableEntry])
+fn id_paging(start: &mut [page::TableEntry])
 {
 	let mut block: usize = 0;
 	for table in start
