@@ -88,11 +88,12 @@ fn create_pd(addr: usize, pt1_addr: usize)
 	}
 	pd[0].set_addr(pt1_addr as u32);
 	id_paging(pt1);
+	pd[0].set_present(true);
 	crate::logln!("\x1b[31m{:#x?}\x1b[39m", pt1[0]);
 	unsafe
 	{
-		crate::logln!("{:?}", &pd as *const _ as *const u8);
-		load_page_directory(&pd as *const _ as *const u8);
+		crate::logln!("{:?}", addr as *const u8);
+		load_page_directory(addr as *const u8);
 		enable_paging();
 	}
 }
