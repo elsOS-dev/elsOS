@@ -2,46 +2,44 @@ ENTRY(_start)
 
 SECTIONS
 {
-    .boot BLOCK(4K) : ALIGN(4K)
+    . = 0x100000;
+    _kernel_start = .;
+    .boot ALIGN(4K) :
     {
-        /* ensure that the multiboot header is at the beginning */
         KEEP(*(.multiboot_header))
     }
-    . = 0x00100000;
-    .text BLOCK(4K) : ALIGN(4K)
+    .text ALIGN(4K) :
     {
-        _kernel_start = .;
         *(.text)
     }
     /* Read-only data. */
-    .rodata BLOCK(4K) : ALIGN(4K)
+    .rodata ALIGN(4K) :
     {
         *(.rodata)
     }
- 
     /* Read-write data (initialized) */
-    .data BLOCK(4K) : ALIGN(4K)
+    .data ALIGN(4K) :
     {
         *(.data)
     }
-    .bss BLOCK(4K) : ALIGN(4K)
+    .bss ALIGN(4K) :
     {
         *(COMMON)
         *(.bss)
     }
-    .stab BLOCK(4K) : ALIGN(4K)
+    .stab ALIGN(4K) :
     {
         *(.stab)
     }
-    .stabstr BLOCK(4K) : ALIGN(4K)
+    .stabstr ALIGN(4K) :
     {
         *(.stabstr)
     }
-    .note BLOCK(4K) : ALIGN(4K)
+    .note ALIGN(4K) :
     {
         *(.note)
     }
-    .comment BLOCK(4K) : ALIGN(4K)
+    .comment ALIGN(4K) :
     {
         *(.comment)
     }
