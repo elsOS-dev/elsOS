@@ -1,4 +1,5 @@
 mod pageframe;
+mod pagetable;
 mod page;
 
 use crate::multiboot::MultibootTagMmap;
@@ -80,4 +81,12 @@ fn id_paging(start: &mut [page::TableEntry])
 		table.set_addr((block) as u32);
 		block += 0x1000;
 	}
+}
+
+pub fn page_map_indexer(v_addr: usize) -> (usize, usize)
+{
+	let pdindex = v_addr >> 22;
+	let ptindex = v_addr >> 12 & 0x03FF;
+
+	return (pdindex, ptindex);
 }
