@@ -1,6 +1,8 @@
 // using https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor to fill the values
 
 use core::mem::size_of;
+use core::ffi::c_void;
+use crate::libc;
 
 #[repr(C, packed)]
 struct gdt_ptr
@@ -102,7 +104,6 @@ static mut GDT_TABLE: gdt = gdt
 extern "C"
 {
 	fn _gdt_flush();
-	fn memcpy(dst: *const u8, src: *const u8, size: usize);
 }
 
 #[no_mangle]
@@ -117,7 +118,7 @@ pub fn init_gdt()
 	let size = size_of::<gdt>() - 1;
 	unsafe
 	{
-		memcpy(0x800 as *const u8, (&GDT_TABLE as *const _) as *const u8, size);
+		libc::memcpy(0x800 as *mut c_void, (&GDT_TABLE as *const _) as *const c_void, size);
 		_gp.limit = size as u16;
 		_gdt_flush();
 	}

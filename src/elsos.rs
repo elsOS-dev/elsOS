@@ -13,6 +13,7 @@ mod multiboot;
 mod serial;
 mod gdt;
 mod memory;
+mod libc;
 
 use core::panic::PanicInfo;
 
