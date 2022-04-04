@@ -4,6 +4,8 @@ mod page;
 
 use crate::multiboot::MultibootTagMmap;
 
+static PAGE_SIZE: usize = 4096;
+
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 {
 	static mut MEM_SIZE_BYTES: u64 = 0;

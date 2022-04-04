@@ -2,6 +2,7 @@ use crate::multiboot::MultibootTagMmap;
 use crate::ferramenta;
 use crate::page_index;
 use crate::memory::get_mem_size;
+use super::PAGE_SIZE;
 
 use core::ffi::c_void;
 
@@ -10,8 +11,6 @@ extern "C"
 	static _kernel_start: c_void;
 	static _kernel_end: c_void;
 }
-
-static PAGE_SIZE: usize = 4096;
 
 pub struct Allocator
 {
