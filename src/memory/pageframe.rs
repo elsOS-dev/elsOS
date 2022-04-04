@@ -24,9 +24,9 @@ pub struct Allocator
 
 impl Allocator
 {
-	pub fn new() -> Allocator
+	pub fn shared() -> &'static mut Allocator
 	{
-		Allocator
+		static mut ALLOC: Allocator = Allocator
 		{
 			free_mem: 0,
 			locked_mem: 0,
@@ -34,6 +34,10 @@ impl Allocator
 			unusable_mem: 0,
 			initialized: false,
 			bitmap: ferramenta::Bitmap {buffer: &mut[] as &'static mut[u8], size: 0},
+		};
+		unsafe
+		{
+			&mut ALLOC
 		}
 	}
 
@@ -159,7 +163,7 @@ impl Allocator
 		}
 	}
 
-	fn lock_page(&mut self, index: usize)
+	pub fn lock_page(&mut self, index: usize)
 	{
 		if self.bitmap[index] == false
 		{
