@@ -83,7 +83,6 @@ impl Allocator
 		// reserve bitmap
 		crate::logln!("reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
-		crate::logln!("free {}KiB used {}KiB reserved {}KiB", self.free_mem / 1024, self.locked_mem / 1024, self.reserved_mem / 1024);
 	}
 
 	pub fn request_free_page(&mut self) -> usize

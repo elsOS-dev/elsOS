@@ -37,6 +37,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	let mut pt_manager = pagetable::Manager::new(page_directory_addr);
 
 	id_map(&mut pt_manager);
+	alloc.print_memusage(1);
 	unsafe
 	{
 		load_page_directory(page_directory_addr as *const page::DirectoryEntry);
