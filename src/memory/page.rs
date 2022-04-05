@@ -162,6 +162,14 @@ impl DirectoryEntry
 	}
 }
 
+impl DirectoryEntry
+{
+	pub fn reset(&mut self)
+	{
+		self.value = 0;
+	}
+}
+
 #[repr(C)]
 pub struct TableEntry
 {
@@ -335,5 +343,13 @@ impl TableEntry
 	pub fn set_present(&mut self, value: bool)
 	{
 		ferramenta::set_bit(&mut self.value, value, 0);
+	}
+}
+
+impl TableEntry
+{
+	pub fn reset(&mut self)
+	{
+		self.value = 0;
 	}
 }

@@ -41,15 +41,23 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	{
 		load_page_directory(page_directory_addr as *const page::DirectoryEntry);
 		enable_paging();
+		pt_manager.enable_paging();
 	}
+	let page = alloc.request_free_page();
+	crate::logln!("requested page: {:#0X}", page);
+	pt_manager.memory_map(0x150000, page);
 }
 
 fn id_map(pt_manager: &mut pagetable::Manager)
 {
-	for i in 0..1024
+	let alloc: &mut pageframe::Allocator = pageframe::Allocator::shared();
+	let mut memory_start = alloc.bitmap.buffer as *const _ as *const usize as usize;
+	memory_start += alloc.bitmap.buffer.len();
+
+	for i in 0..memory_start / PAGE_SIZE
 	{
 		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE);
-		pageframe::Allocator::shared().lock_page(i);
+		alloc.lock_page(i);
 	}
 }
 

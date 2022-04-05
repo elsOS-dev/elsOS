@@ -19,7 +19,7 @@ pub struct Allocator
 	pub reserved_mem: usize,
 	pub unusable_mem: u64,
 	initialized: bool,
-	bitmap: ferramenta::Bitmap,
+	pub bitmap: ferramenta::Bitmap,
 }
 
 impl Allocator

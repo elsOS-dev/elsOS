@@ -8,6 +8,7 @@ use core::ffi::c_void;
 pub struct Manager
 {
 	pub page_directory: &'static mut [page::DirectoryEntry],
+	paging_enabled: bool
 }
 
 impl Manager
@@ -17,11 +18,27 @@ impl Manager
 		unsafe
 		{
 			libc::memset(addr as *mut c_void, 0, PAGE_SIZE);
-			Manager
+			let manager = Manager
 			{
-				page_directory: core::slice::from_raw_parts_mut(addr as *mut page::DirectoryEntry, 1024)
-			}
+				page_directory: core::slice::from_raw_parts_mut(addr as *mut page::DirectoryEntry, 1024),
+				paging_enabled: false
+			};
+			manager.page_directory[1023].set_addr(addr as u32);
+			manager.page_directory[1023].set_rw(true);
+			manager.page_directory[1023].set_present(true);
+			manager
 		}
+	}
+
+	pub unsafe fn enable_paging(&mut self)
+	{
+		self.remap_page_directory();
+		self.paging_enabled = true;
+	}
+
+	unsafe fn remap_page_directory(&mut self)
+	{
+		self.page_directory = core::slice::from_raw_parts_mut(0xffff_f000 as *mut page::DirectoryEntry, 1024)
 	}
 
 	fn create_page_directory_entry(&mut self, index: usize)
@@ -31,28 +48,27 @@ impl Manager
 		if !page_directory_entry.get_present()
 		{
 			let alloc = pageframe::Allocator::shared();
-			let page_table_addr = alloc.request_free_page();
-			unsafe
-			{
-				libc::memset(page_table_addr as *mut c_void, 0, PAGE_SIZE);
-			}
-			page_directory_entry.set_addr(page_table_addr as u32);
+			page_directory_entry.reset();
+			page_directory_entry.set_addr(alloc.request_free_page() as u32);
 			page_directory_entry.set_rw(true);
 			page_directory_entry.set_present(true);
+			unsafe
+			{
+				libc::memset(self.address(index) as *mut c_void, 0, PAGE_SIZE);
+			}
 		}
 	}
 
 	fn create_page_table_entry(&mut self, page_directory_index: usize, page_table_index: usize, physical_address: usize)
 	{
-		let page_directory_entry = &mut self.page_directory[page_directory_index];
 		let page_table = unsafe
 		{
-			core::slice::from_raw_parts_mut(page_directory_entry.get_addr() as *mut page::TableEntry, 1024)
+			core::slice::from_raw_parts_mut(self.address(page_directory_index) as *mut page::TableEntry, 1024)
 		};
 		let page_table_entry = &mut page_table[page_table_index];
-
 		if !page_table_entry.get_present()
 		{
+			page_table_entry.reset();
 			page_table_entry.set_addr(physical_address as u32);
 			page_table_entry.set_rw(true);
 			page_table_entry.set_present(true);
@@ -62,8 +78,20 @@ impl Manager
 	pub fn memory_map(&mut self, v_addr: usize, phys_addr: usize)
 	{
 		let (pdi, pti): (usize, usize) = page_map_indexer(v_addr);
-
 		self.create_page_directory_entry(pdi);
 		self.create_page_table_entry(pdi, pti, phys_addr);
+	}
+
+	fn address(&self, page_directory_index: usize) -> u32
+	{
+		if self.paging_enabled
+		{
+			0xffc0_0000 + 0x1000 * page_directory_index as u32
+		}
+		else
+		{
+			let page_directory_entry = &self.page_directory[page_directory_index];
+			page_directory_entry.get_addr()
+		}
 	}
 }
