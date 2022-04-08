@@ -49,7 +49,7 @@ impl Manager
 		{
 			let alloc = pageframe::Allocator::shared();
 			page_directory_entry.reset();
-			page_directory_entry.set_addr(alloc.request_free_page() as u32);
+			page_directory_entry.set_addr(alloc.request_free_page(true) as u32);
 			page_directory_entry.set_rw(true);
 			page_directory_entry.set_present(true);
 			unsafe

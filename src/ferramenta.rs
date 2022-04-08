@@ -244,3 +244,8 @@ pub fn align(val: usize, bound: usize) -> usize
 {
 	val + bound - 1 & !(bound - 1)
 }
+
+pub fn in_range(input: usize, start: usize, range: usize) -> bool
+{
+	input >= start && input < start + range
+}

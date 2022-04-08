@@ -12,6 +12,9 @@ extern "C"
 	static _kernel_end: c_void;
 }
 
+const KERNEL_SPACE_START: usize = 0x0000_0000;
+const KERNEL_SPACE_RANGE: usize = 0x0000_2000;
+
 pub struct Allocator
 {
 	pub free_mem: usize,
@@ -85,10 +88,14 @@ impl Allocator
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
 	}
 
-	pub fn request_free_page(&mut self) -> usize
+	pub fn request_free_page(&mut self, kernel_space: bool) -> usize
 	{
 		for i in 0..self.bitmap.size
 		{
+			if !kernel_space && ferramenta::in_range(i, KERNEL_SPACE_START, KERNEL_SPACE_RANGE)
+			{
+				continue;
+			}
 			if self.bitmap.get(i) == false
 			{
 				crate::logln!("locking page {}", i);
