@@ -33,7 +33,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	let alloc: &mut pageframe::Allocator = pageframe::Allocator::shared();
 	alloc.read_grub_mmap(mmap, mmap_size);
 
-	let page_directory_addr = alloc.request_free_page();
+	let page_directory_addr = alloc.request_free_page(true);
 	let mut pt_manager = pagetable::Manager::new(page_directory_addr);
 
 	id_map(&mut pt_manager);
@@ -44,8 +44,8 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 		enable_paging();
 		pt_manager.enable_paging();
 	}
-	let page = alloc.request_free_page();
-	crate::logln!("requested page: {:#0X}", page);
+	let page = alloc.request_free_page(false);
+	crate::logln!("requested page userspace: {:#0X}", page);
 	pt_manager.memory_map(0x150000, page);
 }
 
