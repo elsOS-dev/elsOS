@@ -3,6 +3,7 @@ mod pagetable;
 mod page;
 
 use crate::multiboot::MultibootTagMmap;
+use pagetable::flags::*;
 
 static PAGE_SIZE: usize = 4096;
 
@@ -34,7 +35,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	alloc.read_grub_mmap(mmap, mmap_size);
 
 	let page_directory_addr = alloc.request_free_page(true);
-	let mut pt_manager = pagetable::Manager::new(page_directory_addr, 2);
+	let mut pt_manager = pagetable::Manager::new(page_directory_addr, PDE_RW);
 
 	id_map(&mut pt_manager);
 	alloc.print_memusage(1);
@@ -46,7 +47,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	}
 	let page = alloc.request_free_page(false);
 	crate::logln!("requested page userspace: {:#0X}", page);
-	pt_manager.memory_map(0x150000, page, 3);
+	pt_manager.memory_map(0x150000, page);
 }
 
 fn id_map(pt_manager: &mut pagetable::Manager)
@@ -57,7 +58,7 @@ fn id_map(pt_manager: &mut pagetable::Manager)
 
 	for i in 0..memory_start / PAGE_SIZE
 	{
-		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE, 3);
+		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE);
 		alloc.lock_page(i);
 	}
 }
