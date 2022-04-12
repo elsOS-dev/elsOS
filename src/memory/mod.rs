@@ -34,7 +34,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	alloc.read_grub_mmap(mmap, mmap_size);
 
 	let page_directory_addr = alloc.request_free_page(true);
-	let mut pt_manager = pagetable::Manager::new(page_directory_addr);
+	let mut pt_manager = pagetable::Manager::new(page_directory_addr, 2);
 
 	id_map(&mut pt_manager);
 	alloc.print_memusage(1);
