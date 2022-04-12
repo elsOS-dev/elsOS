@@ -30,12 +30,13 @@ pub mod flags
 pub struct Manager
 {
 	pub page_directory: &'static mut [page::DirectoryEntry],
-	paging_enabled: bool
+	paging_enabled: bool,
+	flags: usize,
 }
 
 impl Manager
 {
-	pub fn new(addr: usize) -> Manager
+	pub fn new(addr: usize, flags: usize) -> Manager
 	{
 		unsafe
 		{
@@ -43,7 +44,8 @@ impl Manager
 			let manager = Manager
 			{
 				page_directory: core::slice::from_raw_parts_mut(addr as *mut page::DirectoryEntry, 1024),
-				paging_enabled: false
+				paging_enabled: false,
+				flags: flags,
 			};
 			manager.page_directory[1023].set_addr(addr as u32);
 			manager.page_directory[1023].set_rw(true);
