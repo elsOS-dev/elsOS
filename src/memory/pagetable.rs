@@ -5,6 +5,28 @@ use crate::memory::pageframe;
 use crate::memory::page_map_indexer;
 use core::ffi::c_void;
 
+pub mod flags
+{
+	pub const PDE_PRESENT: usize = 0b0000_0001;
+	pub const PDE_RW: usize = 0b0000_0010;
+	pub const PDE_US: usize = 0b0000_0100;
+	pub const PDE_PWT: usize = 0b0000_1000;
+	pub const PDE_PCD: usize = 0b0001_0000;
+	pub const PDE_ACCESSED: usize = 0b0010_0000;
+	pub const PDE_FLAG2: usize = 0b0100_0000;
+	pub const PDE_PS: usize = 0b1000_0000;
+
+	pub const PTE_PRESENT: usize = 0b0000_0001;
+	pub const PTE_RW: usize = 0b0000_0010;
+	pub const PTE_US: usize = 0b0000_0100;
+	pub const PTE_PWT: usize = 0b0000_1000;
+	pub const PTE_PCD: usize = 0b0001_0000;
+	pub const PTE_ACCESSED: usize = 0b0010_0000;
+	pub const PTE_DIRTY: usize = 0b0100_0000;
+	pub const PTE_PAT: usize = 0b1000_0000;
+	pub const PTE_GLOBAL: usize = 0b1_0000_0000;
+}
+
 pub struct Manager
 {
 	pub page_directory: &'static mut [page::DirectoryEntry],
