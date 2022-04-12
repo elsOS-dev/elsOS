@@ -65,7 +65,7 @@ impl Manager
 		self.page_directory = core::slice::from_raw_parts_mut(0xffff_f000 as *mut page::DirectoryEntry, 1024)
 	}
 
-	fn create_page_directory_entry(&mut self, index: usize, flags: usize)
+	fn create_page_directory_entry(&mut self, index: usize)
 	{
 		let page_directory_entry = &mut self.page_directory[index];
 
@@ -74,7 +74,7 @@ impl Manager
 			let alloc = pageframe::Allocator::shared();
 			page_directory_entry.reset();
 			page_directory_entry.set_addr(alloc.request_free_page(true) as u32);
-			page_directory_entry.value |= flags as u32 & 0xFFF;
+			page_directory_entry.value |= self.flags as u32 & 0xFFF;
 			page_directory_entry.set_present(true);
 			unsafe
 			{
@@ -83,7 +83,7 @@ impl Manager
 		}
 	}
 
-	fn create_page_table_entry(&mut self, page_directory_index: usize, page_table_index: usize, physical_address: usize, flags: usize)
+	fn create_page_table_entry(&mut self, page_directory_index: usize, page_table_index: usize, physical_address: usize)
 	{
 		let page_table = unsafe
 		{
@@ -94,16 +94,16 @@ impl Manager
 		{
 			page_table_entry.reset();
 			page_table_entry.set_addr(physical_address as u32);
-			page_table_entry.value |= flags as u32 & 0xFFF;
+			page_table_entry.value |= self.flags as u32 & 0xFFF;
 			page_table_entry.set_present(true);
 		}
 	}
 
-	pub fn memory_map(&mut self, v_addr: usize, phys_addr: usize, flags: usize)
+	pub fn memory_map(&mut self, v_addr: usize, phys_addr: usize)
 	{
 		let (pdi, pti): (usize, usize) = page_map_indexer(v_addr);
-		self.create_page_directory_entry(pdi, flags);
-		self.create_page_table_entry(pdi, pti, phys_addr, flags);
+		self.create_page_directory_entry(pdi);
+		self.create_page_table_entry(pdi, pti, phys_addr);
 	}
 
 	fn address(&self, page_directory_index: usize) -> u32
