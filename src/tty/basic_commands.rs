@@ -1,6 +1,8 @@
 use core::arch::asm;
+use core::ffi::c_void;
 use crate::ferramenta;
 use crate::vga;
+use crate::memory;
 
 pub fn execute(command: &str)
 {
@@ -25,7 +27,7 @@ pub fn execute(command: &str)
 				let command = &command[..command_end];
 				match command
 				{
-					"pm" | "pb" =>
+					"pm" | "pb" | "km" | "vm" | "kfree" | "vfree" =>
 					{
 						let address = u32::from_str_radix(arg, 16)
 													 .unwrap_or_else(|_|
@@ -38,6 +40,10 @@ pub fn execute(command: &str)
 						{
 							"pm" => printmem_at(address as *const u8, false),
 							"pb" => printmem_at(address as *const u8, true),
+							"km" => allocate(address as usize, true),
+							"vm" => allocate(address as usize, false),
+							"kfree" => free(address as *mut c_void, true),
+							"vfree" => free(address as *mut c_void, false),
 							_ => {}
 						};
 					}
@@ -103,6 +109,49 @@ fn printmem_at(address: *const u8, binary: bool)
 			ferramenta::print_memory(address, 256);
 		}
 	}
+}
+
+fn allocate(size: usize, kernel_space: bool)
+{
+	let address = if kernel_space
+	{
+		memory::kmalloc(size)
+	}
+	else
+	{
+		memory::vmalloc(size)
+	};
+
+	let size = if kernel_space
+	{
+		memory::ksize(address)
+	}
+	else
+	{
+		memory::vsize(address)
+	};
+	crate::logln!("allocated {} ({:#0x}) bytes at {:#08x}", size, size, address as usize);
+}
+
+fn free(address: *mut c_void, kernel_space: bool)
+{
+	let size = if kernel_space
+	{
+		memory::ksize(address)
+	}
+	else
+	{
+		memory::vsize(address)
+	};
+	if kernel_space
+	{
+		memory::kfree(address);
+	}
+	else
+	{
+		memory::vfree(address);
+	}
+	crate::logln!("freeed {} ({:#0x}) bytes at {:#08x}", size, size, address as usize);
 }
 
 fn print_stack()
