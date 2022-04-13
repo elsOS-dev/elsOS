@@ -90,7 +90,21 @@ impl Allocator
 
 	pub fn request_free_page(&mut self, kernel_space: bool) -> usize
 	{
-		for i in 0..self.bitmap.size
+		let mut occupied_chunks = 0;
+
+		for i in 0..self.bitmap.size / 32
+		{
+			if !kernel_space && ferramenta::in_range(i * 32, KERNEL_SPACE_START, KERNEL_SPACE_RANGE)
+			{
+				continue;
+			}
+			if self.bitmap.get_chunk32(i) != 0xffff_ffff
+			{
+				occupied_chunks = i;
+				break;
+			}
+		}
+		for i in (occupied_chunks as usize * 32)..self.bitmap.size
 		{
 			if !kernel_space && ferramenta::in_range(i, KERNEL_SPACE_START, KERNEL_SPACE_RANGE)
 			{

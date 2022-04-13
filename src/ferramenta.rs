@@ -190,6 +190,17 @@ impl Bitmap
 		return false;
 	}
 
+	pub fn get_chunk32(&self, index: usize) -> u32
+	{
+		let mut chunk: u32 = 0;
+
+		for i in 0..4
+		{
+			chunk += self.buffer[index * 4 + i] as u32;
+		}
+		chunk
+	}
+
 	pub fn set(&mut self, index: usize, value: bool)
 	{
 		let byte_index: usize = index / 8;
