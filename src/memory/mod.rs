@@ -1,15 +1,20 @@
+pub mod malloc;
 mod pageframe;
 mod pagetable;
 mod page;
 
 use crate::multiboot::MultibootTagMmap;
+use crate::libc;
+use crate::ferramenta;
 use pagetable::flags::*;
+pub use malloc::*;
 
 // In pages, * PAGE_SIZE to get memory sizes
 const KERNEL_SPACE_START: usize = 0x0000_0000;
 const KERNEL_SPACE_RANGE: usize = 0x0000_2000;
 
 static PAGE_SIZE: usize = 4096;
+static mut PT_MANAGER: pagetable::Manager = pagetable::Manager::uninitialized();
 
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 {
@@ -50,8 +55,17 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 		pt_manager.enable_paging();
 	}
 	let page = alloc.request_free_page(false);
-	crate::logln!("requested page userspace: {:#0X}", page);
-	pt_manager.memory_map(0x150000, page);
+	let virtual_page = PAGE_SIZE * (KERNEL_SPACE_START + KERNEL_SPACE_RANGE);
+	pt_manager.memory_map(virtual_page, page);
+	unsafe
+	{
+		libc::memset(virtual_page as *mut _, 0, PAGE_SIZE);
+	}
+
+	unsafe
+	{
+		PT_MANAGER = pt_manager;
+	}
 }
 
 fn id_map(pt_manager: &mut pagetable::Manager)
@@ -60,7 +74,13 @@ fn id_map(pt_manager: &mut pagetable::Manager)
 	let mut memory_start = alloc.bitmap.buffer as *const _ as *const usize as usize;
 	memory_start += alloc.bitmap.buffer.len();
 
+	pt_manager.memory_start = ferramenta::align(memory_start, PAGE_SIZE);
 	for i in 0..memory_start / PAGE_SIZE
+	{
+		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE);
+		alloc.lock_page(i);
+	}
+	for i in memory_start / PAGE_SIZE..KERNEL_SPACE_START + KERNEL_SPACE_RANGE
 	{
 		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE);
 		alloc.lock_page(i);
