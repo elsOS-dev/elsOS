@@ -2,7 +2,7 @@ use crate::multiboot::MultibootTagMmap;
 use crate::ferramenta;
 use crate::page_index;
 use crate::memory::get_mem_size;
-use super::PAGE_SIZE;
+use super::{KERNEL_SPACE_START, KERNEL_SPACE_RANGE, PAGE_SIZE};
 
 use core::ffi::c_void;
 
@@ -11,9 +11,6 @@ extern "C"
 	static _kernel_start: c_void;
 	static _kernel_end: c_void;
 }
-
-const KERNEL_SPACE_START: usize = 0x0000_0000;
-const KERNEL_SPACE_RANGE: usize = 0x0000_2000;
 
 pub struct Allocator
 {
@@ -86,38 +83,59 @@ impl Allocator
 		// reserve bitmap
 		crate::logln!("reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
+		crate::logln!("[INFO] kernel space : {:#08x} - {:#08x}", PAGE_SIZE * KERNEL_SPACE_START, PAGE_SIZE * (KERNEL_SPACE_START + KERNEL_SPACE_RANGE));
+	}
+
+	pub fn request_free_pages(&mut self, n: usize, kernel_space: bool) -> usize
+	{
+		let mut first_page = 0;
+		let start = if kernel_space
+		{
+			0
+		}
+		else
+		{
+			KERNEL_SPACE_START + KERNEL_SPACE_RANGE
+		};
+		let end = if kernel_space
+		{
+			KERNEL_SPACE_START + KERNEL_SPACE_RANGE - 1
+		}
+		else
+		{
+			self.bitmap.size
+		};
+
+		let mut i = start;
+		while i < end
+		{
+			i += 1;
+
+			let next_i = self.bitmap.get_n_pages(i, n);
+			if next_i == 0
+			{
+				for j in i..i + n
+				{
+					crate::serial_println!("locking page {}", j);
+					self.lock_page(j);
+					if first_page == 0
+					{
+						first_page = j * 0x1000;
+					}
+				}
+				break
+			}
+			else
+			{
+				i = next_i
+			}
+		}
+		first_page
 	}
 
 	pub fn request_free_page(&mut self, kernel_space: bool) -> usize
 	{
-		let mut occupied_chunks = 0;
-
-		for i in 0..self.bitmap.size / 32
-		{
-			if !kernel_space && ferramenta::in_range(i * 32, KERNEL_SPACE_START, KERNEL_SPACE_RANGE)
-			{
-				continue;
-			}
-			if self.bitmap.get_chunk32(i) != 0xffff_ffff
-			{
-				occupied_chunks = i;
-				break;
-			}
-		}
-		for i in (occupied_chunks as usize * 32)..self.bitmap.size
-		{
-			if !kernel_space && ferramenta::in_range(i, KERNEL_SPACE_START, KERNEL_SPACE_RANGE)
-			{
-				continue;
-			}
-			if self.bitmap.get(i) == false
-			{
-				crate::serial_println!("locking page {}", i);
-				self.lock_page(i);
-				return i * 0x1000;
-			}
-		}
-		0
+		self.request_free_pages(1, kernel_space)
 	}
 
 	pub fn free_page(&mut self, address: usize)

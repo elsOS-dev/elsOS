@@ -5,6 +5,10 @@ mod page;
 use crate::multiboot::MultibootTagMmap;
 use pagetable::flags::*;
 
+// In pages, * PAGE_SIZE to get memory sizes
+const KERNEL_SPACE_START: usize = 0x0000_0000;
+const KERNEL_SPACE_RANGE: usize = 0x0000_2000;
+
 static PAGE_SIZE: usize = 4096;
 
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
