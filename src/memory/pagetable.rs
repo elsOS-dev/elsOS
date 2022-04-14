@@ -32,10 +32,26 @@ pub struct Manager
 	pub page_directory: &'static mut [page::DirectoryEntry],
 	paging_enabled: bool,
 	flags: usize,
+	pub memory_start: usize,
+	pub heap_start: usize,
+	pub last_mapped: usize
 }
 
 impl Manager
 {
+	pub const fn uninitialized() -> Manager
+	{
+		Manager
+		{
+			page_directory: &mut [],
+			paging_enabled: false,
+			flags: 0,
+			memory_start: 0,
+			heap_start: 0,
+			last_mapped: 0
+		}
+	}
+
 	pub fn new(addr: usize, flags: usize) -> Manager
 	{
 		unsafe
@@ -46,6 +62,9 @@ impl Manager
 				page_directory: core::slice::from_raw_parts_mut(addr as *mut page::DirectoryEntry, 1024),
 				paging_enabled: false,
 				flags: flags,
+				memory_start: 0,
+				heap_start: 0,
+				last_mapped: 0
 			};
 			manager.page_directory[1023].set_addr(addr as u32);
 			manager.page_directory[1023].set_rw(true);
@@ -104,6 +123,15 @@ impl Manager
 		let (pdi, pti): (usize, usize) = page_map_indexer(v_addr);
 		self.create_page_directory_entry(pdi);
 		self.create_page_table_entry(pdi, pti, phys_addr);
+		if v_addr != phys_addr
+		{
+			if self.heap_start == 0
+			{
+				self.heap_start = v_addr;
+				crate::serial_println!("[INFO] heap start at {:#08x}", self.heap_start);
+			}
+			self.last_mapped = v_addr;
+		}
 	}
 
 	fn address(&self, page_directory_index: usize) -> u32

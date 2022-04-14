@@ -112,7 +112,7 @@ impl Allocator
 			}
 			if self.bitmap.get(i) == false
 			{
-				crate::logln!("locking page {}", i);
+				crate::serial_println!("locking page {}", i);
 				self.lock_page(i);
 				return i * 0x1000;
 			}
