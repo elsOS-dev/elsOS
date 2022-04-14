@@ -86,6 +86,14 @@ fn panic(info: &PanicInfo) -> !
 	vga::panic();
 	logln!("\n\x1B[31;49m{}\x1B[39;49m\n", info);
 
+	print_memory_state(false);
+
+	logln!("");
+	loop {}
+}
+
+fn print_memory_state(serial_only: bool)
+{
 	let eax: u32;
 	let ebx: u32;
 	let ecx: u32;
@@ -109,24 +117,49 @@ fn panic(info: &PanicInfo) -> !
 		ebp = crate::get_reg!("ebp");
 	}
 
-	logln!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
-	logln!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
+	if !serial_only
+	{
+		crate::vga_println!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
+		crate::vga_println!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
+	}
+	crate::serial_println!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
+	crate::serial_println!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
 
-	log!("\nstack: ");
+	if !serial_only
+	{
+		crate::vga_print!("\nstack: ");
+	}
+	crate::serial_print!("\nstack: ");
 	for i in 0..24
 	{
 		unsafe
 		{
-			log!("{:08x} ", *(esp as *const u32).add(i * 4));
+			if !serial_only
+			{
+				crate::vga_print!("{:08x} ", *(esp as *const u32).add(i * 4));
+			}
+			crate::serial_print!("{:08x} ", *(esp as *const u32).add(i * 4));
 			if (i + 1) % 8 == 0
 			{
-				log!("\n       ");
+				if !serial_only
+				{
+					crate::vga_print!("\n       ");
+				}
+				crate::serial_print!("\n       ");
 			}
 		}
 	}
+}
 
-	logln!("");
-	loop {}
+#[macro_export]
+macro_rules! oops
+{
+	($($arg:tt)*) =>
+	{
+		$crate::logln!("\x1B[33;49moops at '{}', {}:{}:{}\x1B[39;49m\n", format_args!($($arg)*), file!(), line!(), column!());
+		$crate::print_memory_state(true);
+		$crate::serial_println!("");
+	}
 }
 
 #[macro_export]
