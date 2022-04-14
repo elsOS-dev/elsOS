@@ -4,6 +4,7 @@ use crate::multiboot::MultibootTagMmap;
 use pagetable::flags::*;
 pub use malloc::*;
 
+pub mod allocator;
 pub mod malloc;
 mod page;
 mod pageframe;
