@@ -190,6 +190,18 @@ impl Bitmap
 		return false;
 	}
 
+	pub fn get_n_pages(&self, index: usize, n: usize) -> usize
+	{
+		for i in index..index + n
+		{
+			if self.get(i)
+			{
+				return i;
+			}
+		}
+		0
+	}
+
 	pub fn get_chunk32(&self, index: usize) -> u32
 	{
 		let mut chunk: u32 = 0;
