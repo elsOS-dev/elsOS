@@ -57,11 +57,14 @@ impl Allocator
 			kernel_start = &_kernel_start as *const _ as usize;
 			kernel_end =  &_kernel_end as *const _ as usize;
 		}
+		crate::logln!("KERNEL START {:#08x} END {:#08x}", kernel_start, kernel_end);
+
 		self.reserved_mem = crate::memory::get_mem_size(mmap, mmap_size);
 		crate::logln!("[INFO] found {}KiB of memory", self.reserved_mem / 1024);
 		// initialise the bitmap according to mem size, and set every page as reserved
 		self.init_bitmap(ferramenta::align(kernel_end, 0x1000));
 		crate::logln!("[INFO] assigned {} pages to bitmap", self.bitmap.size);
+		crate::logln!("[INFO] bitmap end : {:#08x}", &self.bitmap as *const _ as usize + self.bitmap.buffer.len());
 		unsafe
 		{
 			for entry in (*mmap).entries(mmap_size)

@@ -4,6 +4,9 @@
 #![allow(dead_code)]
 #![no_std]
 #![no_main]
+#![feature(alloc_error_handler)]
+
+extern crate alloc;
 
 use core::panic::PanicInfo;
 use crate::multiboot::{MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES};
@@ -255,4 +258,3 @@ macro_rules! logln
 	() => ($crate::log!("\n"));
 	($($arg:tt)*) => ($crate::log!("{}\n", format_args!($($arg)*)));
 }
-
