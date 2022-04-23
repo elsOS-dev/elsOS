@@ -15,6 +15,9 @@ RUST_KERNEL=target/$(TARGET)/$(DEBUG_RELEASE)/libelsos.a
 LD=$(ARCH)-elf-ld
 CC=$(ARCH)-elf-gcc
 AR=$(ARCH)-elf-ar
+QEMU=qemu-system-i386
+QEMU_ARGS=-drive format=raw,file=$(ISO) -serial stdio
+QEMU_MEMORY=-m 500M
 
 CFLAGS=-m32 -std=gnu99 -ffreestanding -Wall -Wextra -c
 ARFLAGS=rcs
@@ -37,13 +40,13 @@ LIBC_A=build/libc/libc.a
 all: $(KERNEL)
 
 run: $(ISO)
-	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio
+	$(QEMU) $(QEMU_ARGS) $(QEMU_MEMORY)
 
 rund: $(ISO)
-	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int
+	$(QEMU) $(QEMU_ARGS) $(QEMU_MEMORY) -d int
 
 rundd: $(ISO)
-	qemu-system-i386 -drive format=raw,file=$(ISO) -serial stdio -d int -s -S
+	$(QEMU) $(QEMU_ARGS) $(QEMU_MEMORY) -d int -s -S
 
 iso: $(ISO)
 
