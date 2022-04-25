@@ -43,6 +43,7 @@ pub fn kmalloc(size: usize) -> *mut c_void
 
 pub fn kzalloc(size: usize) -> *mut c_void
 {
+	let size = ferramenta::align(size, 0x10);
 	let address = kmalloc(size);
 
 	if address != core::ptr::null_mut::<c_void>()
@@ -100,6 +101,7 @@ pub fn vmalloc(size: usize) -> *mut c_void
 
 pub fn vzalloc(size: usize) -> *mut c_void
 {
+	let size = ferramenta::align(size, 0x10);
 	let address = vmalloc(size);
 
 	if address != core::ptr::null_mut::<c_void>()
