@@ -23,7 +23,8 @@ pub fn kmalloc(size: usize) -> *mut c_void
 		&mut PT_MANAGER
 	};
 
-	let address = next_available_space(pt_manager.memory_start, size, true);
+	let start = pt_manager.memory_start + PAGE_SIZE * (pt_manager.page_count / 1024 + 2);
+	let address = next_available_space(start, size, true);
 
 	if address == 0
 	{
