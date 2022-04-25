@@ -46,6 +46,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	let page_directory_addr = alloc.request_free_page(true);
 	let mut pt_manager = pagetable::Manager::new(page_directory_addr, PDE_RW);
 
+	pt_manager.page_count = alloc.bitmap.size;
 	id_map(&mut pt_manager);
 	alloc.print_memusage(1);
 	unsafe
@@ -83,6 +84,9 @@ fn id_map(pt_manager: &mut pagetable::Manager)
 	for i in memory_start / PAGE_SIZE..KERNEL_SPACE_START + KERNEL_SPACE_RANGE
 	{
 		pt_manager.memory_map(i * PAGE_SIZE, i * PAGE_SIZE);
+	}
+	for i in pt_manager.page_count / 1024 + 2 + memory_start / PAGE_SIZE..KERNEL_SPACE_START + KERNEL_SPACE_RANGE
+	{
 		alloc.lock_page(i);
 	}
 }

@@ -33,6 +33,7 @@ pub struct Manager
 	paging_enabled: bool,
 	flags: usize,
 	pub memory_start: usize,
+	pub page_count: usize,
 	pub heap_start: usize,
 	pub last_mapped: usize
 }
@@ -47,6 +48,7 @@ impl Manager
 			paging_enabled: false,
 			flags: 0,
 			memory_start: 0,
+			page_count: 0,
 			heap_start: 0,
 			last_mapped: 0
 		}
@@ -63,6 +65,7 @@ impl Manager
 				paging_enabled: false,
 				flags: flags,
 				memory_start: 0,
+				page_count: 0,
 				heap_start: 0,
 				last_mapped: 0
 			};
