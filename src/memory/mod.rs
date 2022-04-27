@@ -16,6 +16,13 @@ const KERNEL_SPACE_RANGE: usize = 0x0000_2000;
 static PAGE_SIZE: usize = 4096;
 static mut PT_MANAGER: pagetable::Manager = pagetable::Manager::uninitialized();
 
+#[derive(Copy, Clone, PartialEq)]
+pub enum MemorySpace
+{
+	Kernel,
+	User
+}
+
 pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 {
 	static mut MEM_SIZE_BYTES: u64 = 0;
@@ -43,7 +50,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 	let alloc: &mut pageframe::Allocator = pageframe::Allocator::shared();
 	alloc.read_grub_mmap(mmap, mmap_size);
 
-	let page_directory_addr = alloc.request_free_page(true);
+	let page_directory_addr = alloc.request_free_page(MemorySpace::Kernel);
 	let mut pt_manager = pagetable::Manager::new(page_directory_addr, PDE_RW);
 
 	pt_manager.page_count = alloc.bitmap.size;
@@ -55,7 +62,7 @@ pub fn init(mmap: *const MultibootTagMmap, mmap_size: usize)
 		enable_paging();
 		pt_manager.enable_paging();
 	}
-	let page = alloc.request_free_page(false);
+	let page = alloc.request_free_page(MemorySpace::User);
 	let virtual_page = PAGE_SIZE * (KERNEL_SPACE_START + KERNEL_SPACE_RANGE);
 	pt_manager.memory_map(virtual_page, page);
 	unsafe
