@@ -3,6 +3,7 @@ use crate::memory::PAGE_SIZE;
 use crate::memory::page;
 use crate::memory::pageframe;
 use crate::memory::page_map_indexer;
+use super::MemorySpace;
 use core::ffi::c_void;
 
 pub mod flags
@@ -95,7 +96,7 @@ impl Manager
 		{
 			let alloc = pageframe::Allocator::shared();
 			page_directory_entry.reset();
-			page_directory_entry.set_addr(alloc.request_free_page(true) as u32);
+			page_directory_entry.set_addr(alloc.request_free_page(MemorySpace::Kernel) as u32);
 			page_directory_entry.value |= self.flags as u32 & 0xFFF;
 			page_directory_entry.set_present(true);
 			unsafe
@@ -148,5 +149,10 @@ impl Manager
 			let page_directory_entry = &self.page_directory[page_directory_index];
 			page_directory_entry.get_addr()
 		}
+	}
+
+	pub fn heap_size(&self) -> usize
+	{
+		self.last_mapped + 0xfff - self.heap_start
 	}
 }

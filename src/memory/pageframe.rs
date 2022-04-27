@@ -2,7 +2,7 @@ use crate::multiboot::MultibootTagMmap;
 use crate::ferramenta;
 use crate::page_index;
 use crate::memory::get_mem_size;
-use super::{KERNEL_SPACE_START, KERNEL_SPACE_RANGE, PAGE_SIZE};
+use super::{KERNEL_SPACE_START, KERNEL_SPACE_RANGE, PAGE_SIZE, MemorySpace};
 
 use core::ffi::c_void;
 
@@ -86,24 +86,18 @@ impl Allocator
 		crate::logln!("[INFO] kernel space : {:#08x} - {:#08x}", PAGE_SIZE * KERNEL_SPACE_START, PAGE_SIZE * (KERNEL_SPACE_START + KERNEL_SPACE_RANGE));
 	}
 
-	pub fn request_free_pages(&mut self, n: usize, kernel_space: bool) -> usize
+	pub fn request_free_pages(&mut self, n: usize, memory_space: MemorySpace) -> usize
 	{
 		let mut first_page = 0;
-		let start = if kernel_space
+		let start = match memory_space
 		{
-			0
-		}
-		else
-		{
-			KERNEL_SPACE_START + KERNEL_SPACE_RANGE
+			MemorySpace::Kernel => 0,
+			MemorySpace::User => KERNEL_SPACE_START + KERNEL_SPACE_RANGE
 		};
-		let end = if kernel_space
+		let end = match memory_space
 		{
-			KERNEL_SPACE_START + KERNEL_SPACE_RANGE - 1
-		}
-		else
-		{
-			self.bitmap.size
+			MemorySpace::Kernel => KERNEL_SPACE_START + KERNEL_SPACE_RANGE - 1,
+			MemorySpace::User => self.bitmap.size
 		};
 
 		let mut i = start;
@@ -133,9 +127,9 @@ impl Allocator
 		first_page
 	}
 
-	pub fn request_free_page(&mut self, kernel_space: bool) -> usize
+	pub fn request_free_page(&mut self, memory_space: MemorySpace) -> usize
 	{
-		self.request_free_pages(1, kernel_space)
+		self.request_free_pages(1, memory_space)
 	}
 
 	pub fn free_page(&mut self, address: usize)
