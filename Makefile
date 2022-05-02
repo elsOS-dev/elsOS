@@ -87,3 +87,5 @@ clean:
 mrproper: clean
 	cargo clean
 
+re: mrproper
+	make all
