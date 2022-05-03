@@ -27,7 +27,7 @@ pub fn execute(command: &str)
 				let command = &command[..command_end];
 				match command
 				{
-					"pm" | "pb" | "km" | "vm" | "kfree" | "vfree" =>
+					"pm" | "pb" | "pk" | "pv" | "km" | "vm" | "kfree" | "vfree" =>
 					{
 						let address = u32::from_str_radix(arg, 16)
 													 .unwrap_or_else(|_|
@@ -40,6 +40,8 @@ pub fn execute(command: &str)
 						{
 							"pm" => printmem_at(address as *const u8, false),
 							"pb" => printmem_at(address as *const u8, true),
+							"pk" => print_var(address as *const u8, true),
+							"pv" => print_var(address as *const u8, false),
 							"km" => allocate(address as usize, true),
 							"vm" => allocate(address as usize, false),
 							"kfree" => free(address as *mut c_void, true),
@@ -106,8 +108,25 @@ fn printmem_at(address: *const u8, binary: bool)
 		}
 		else
 		{
-			ferramenta::print_memory(address, 256);
+			ferramenta::print_memory(address, 0x1000);
 		}
+	}
+}
+
+fn print_var(address: *const u8, kernel_space: bool)
+{
+	unsafe
+	{
+		let size = if kernel_space
+		{
+			memory::ksize(address as *mut c_void)
+		}
+		else
+		{
+			memory::vsize(address as *mut c_void)
+		};
+		let address = (address as usize - 0x10) as *const u8;
+		ferramenta::print_memory(address, size);
 	}
 }
 
