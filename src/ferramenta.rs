@@ -72,27 +72,27 @@ pub unsafe fn print_memory(ptr: *const u8, n: usize)
 	{
 		if i % 16 == 0
 		{
-			crate::log!("{:08x}: ", ptr.add(i) as u32);
+			crate::serial_print!("{:08x}: ", ptr.add(i) as u32);
 		}
-		crate::log!("{:02x?} ", *ptr.add(i));
+		crate::serial_print!("{:02x?} ", *ptr.add(i));
 		i += 1;
 		if i % 16 == 0
 		{
-			crate::log!(" |");
+			crate::serial_print!(" |");
 			for i in i - 16..i
 			{
 				let chr = *ptr.add(i);
-				crate::log!("{}", if chr > 0x1f && chr < 0x7f {chr as char } else { '.' });
+				crate::serial_print!("{}", if chr > 0x1f && chr < 0x7f {chr as char } else { '.' });
 			}
-			crate::log!("|");
-			crate::logln!();
+			crate::serial_print!("|");
+			crate::serial_println!();
 		}
 		else if i % 8 == 0
 		{
-			crate::log!("  ");
+			crate::serial_print!("  ");
 		}
 	}
-	crate::logln!();
+	crate::serial_println!();
 }
 
 pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
