@@ -1,6 +1,5 @@
 use crate::vga::Writer;
-use crate::vga::colors::Color;
-use crate::vga::colors::ColorCode;
+use crate::vga::colors::{Color, ColorCode};
 
 pub struct Escaper
 {

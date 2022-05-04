@@ -1,10 +1,9 @@
 use crate::keyboard;
 use crate::vga;
+pub use crate::tty::print::_print;
 
 mod basic_commands;
 mod print;
-
-pub use crate::tty::print::_print;
 
 const BUFFER_HEIGHT: usize = vga::BUFFER_HEIGHT;
 const BUFFER_WIDTH: usize = vga::BUFFER_WIDTH;

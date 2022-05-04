@@ -5,6 +5,9 @@
 #![no_std]
 #![no_main]
 
+use core::panic::PanicInfo;
+use crate::multiboot::{MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES};
+
 mod ferramenta;
 mod vga;
 mod keyboard;
@@ -15,15 +18,10 @@ mod gdt;
 mod memory;
 mod libc;
 
-use core::panic::PanicInfo;
-
 static VERSION: &str = env!("VERSION");
 static PATCHLEVEL: &str = env!("PATCHLEVEL");
 static SUBLEVEL: &str = env!("SUBLEVEL");
 static EXTRAVERSION: &str = env!("EXTRAVERSION");
-
-use crate::multiboot::MULTIBOOT_MMAP;
-use crate::multiboot::MULTIBOOT_MMAP_ENTRIES;
 
 pub struct Settings
 {

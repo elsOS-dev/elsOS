@@ -1,7 +1,7 @@
 // using https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor to fill the values
 
-use core::mem::size_of;
 use core::ffi::c_void;
+use core::mem::size_of;
 use crate::libc;
 
 #[repr(C, packed)]

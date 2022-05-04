@@ -1,8 +1,8 @@
 use core::arch::asm;
 use core::ffi::c_void;
 use crate::ferramenta;
-use crate::vga;
 use crate::memory;
+use crate::vga;
 
 pub fn execute(command: &str)
 {
