@@ -1,13 +1,13 @@
-pub mod malloc;
-mod pageframe;
-mod pagetable;
-mod page;
-
-use crate::multiboot::MultibootTagMmap;
-use crate::libc;
 use crate::ferramenta;
+use crate::libc;
+use crate::multiboot::MultibootTagMmap;
 use pagetable::flags::*;
 pub use malloc::*;
+
+pub mod malloc;
+mod page;
+mod pageframe;
+mod pagetable;
 
 // In pages, * PAGE_SIZE to get memory sizes
 const KERNEL_SPACE_START: usize = 0x0000_0000;

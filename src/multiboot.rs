@@ -1,9 +1,9 @@
-use crate::log;
-use crate::logln;
-use crate::ferramenta;
-use crate::ok_fail;
 use core::slice;
 use core::mem::size_of;
+use crate::ferramenta;
+use crate::log;
+use crate::logln;
+use crate::ok_fail;
 
 pub static mut MULTIBOOT_MMAP: *const MultibootTagMmap = core::ptr::null();
 pub static mut MULTIBOOT_MMAP_ENTRIES: usize = 0;

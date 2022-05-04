@@ -1,12 +1,10 @@
 use core::cmp::max;
 use core::ffi::c_void;
-use super::pageframe;
-use super::pagetable;
-use super::PAGE_SIZE;
-use super::PT_MANAGER;
-use super::MemorySpace;
 use crate::ferramenta;
 use crate::libc;
+use super::{pageframe, pagetable};
+use super::MemorySpace;
+use super::{PAGE_SIZE, PT_MANAGER};
 
 #[repr(align(0x10))]
 struct AllocHeader

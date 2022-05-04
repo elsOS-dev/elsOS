@@ -1,5 +1,5 @@
-use crate::tty;
 use crate::ferramenta;
+use crate::tty;
 
 mod azerty;
 mod qwerty;

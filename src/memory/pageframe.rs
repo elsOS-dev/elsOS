@@ -1,10 +1,9 @@
-use crate::multiboot::MultibootTagMmap;
-use crate::ferramenta;
-use crate::page_index;
-use crate::memory::get_mem_size;
-use super::{KERNEL_SPACE_START, KERNEL_SPACE_RANGE, PAGE_SIZE, MemorySpace};
-
 use core::ffi::c_void;
+use crate::ferramenta;
+use crate::multiboot::MultibootTagMmap;
+use crate::memory::get_mem_size;
+use crate::page_index;
+use super::{KERNEL_SPACE_START, KERNEL_SPACE_RANGE, PAGE_SIZE, MemorySpace};
 
 extern "C"
 {

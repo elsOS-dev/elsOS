@@ -1,5 +1,5 @@
-use core::arch::asm;
 use core::slice;
+use core::arch::asm;
 
 pub fn shutdown_qemu()
 {

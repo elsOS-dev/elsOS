@@ -1,10 +1,8 @@
-use crate::libc;
-use crate::memory::PAGE_SIZE;
-use crate::memory::page;
-use crate::memory::pageframe;
-use crate::memory::page_map_indexer;
-use super::MemorySpace;
 use core::ffi::c_void;
+use crate::libc;
+use crate::memory::{page, pageframe, page_map_indexer};
+use crate::memory::PAGE_SIZE;
+use super::MemorySpace;
 
 pub mod flags
 {
