@@ -18,6 +18,12 @@ struct AllocHeader
 
 pub fn kmalloc(size: usize) -> *mut c_void
 {
+	if size == 0
+	{
+		crate::oops!("cannot allocate memory of size 0");
+		return core::ptr::null_mut::<c_void>();
+	}
+
 	let size = ferramenta::align(size, 0x10);
 	let pt_manager: &mut pagetable::Manager = unsafe
 	{
@@ -63,6 +69,12 @@ pub fn ksize(address: *mut c_void) -> usize
 
 pub fn vmalloc(size: usize) -> *mut c_void
 {
+	if size == 0
+	{
+		crate::oops!("cannot allocate memory of size 0");
+		return core::ptr::null_mut::<c_void>();
+	}
+
 	let size = ferramenta::align(size, 0x10);
 	let pt_manager: &mut pagetable::Manager = unsafe
 	{
