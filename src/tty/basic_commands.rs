@@ -140,7 +140,10 @@ fn allocate(size: usize, kernel_space: bool)
 	{
 		memory::vmalloc(size)
 	};
-
+	if address.is_null()
+	{
+		return;
+	}
 	let size = if kernel_space
 	{
 		memory::ksize(address)
