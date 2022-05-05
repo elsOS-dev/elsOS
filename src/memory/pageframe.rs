@@ -69,18 +69,17 @@ impl Allocator
 				if (entry.tag_type == 1 && entry.addr < get_mem_size(mmap, mmap_size) as u32) && entry.addr != 0
 				{
 					// unreserve grub memmap entries marked as free except lower memory
-					crate::logln!("unreserving {} pages", page_index!(entry.len as usize));
 					self.unreserve_mem(page_index!(entry.addr as usize), page_index!(entry.len as usize));
 				}
 			}
 		}
 		// reserve kernel space
-		crate::logln!("reserving {} pages for kernel", page_index!(kernel_end - kernel_start));
 		self.reserve_mem(page_index!(kernel_start), page_index!(kernel_end - kernel_start));
-		crate::logln!("kernel end {:#x}", kernel_end);
-		crate::logln!("memory start {:#x}", (self.bitmap.buffer as *const _ as *const usize as usize) + self.bitmap.buffer.len());
+		crate::logln!("[INFO] reserved {} pages for kernel", page_index!(kernel_end - kernel_start));
+		crate::logln!("[INFO] kernel {:#08x} - {:#08x}", kernel_start, kernel_end);
+		crate::logln!("[INFO] kernel space memory start {:#08x}", (self.bitmap.buffer as *const _ as *const usize as usize) + self.bitmap.buffer.len());
 		// reserve bitmap
-		crate::logln!("reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
+		crate::logln!("[INFO] reserving {} pages for bitmap", page_index!(self.bitmap.size / 8));
 		self.reserve_mem(page_index!(kernel_end),  page_index!(self.bitmap.size / 8));
 		crate::logln!("[INFO] kernel space : {:#08x} - {:#08x}", PAGE_SIZE * KERNEL_SPACE_START, PAGE_SIZE * (KERNEL_SPACE_START + KERNEL_SPACE_RANGE));
 	}
@@ -109,7 +108,6 @@ impl Allocator
 			{
 				for j in i..i + n
 				{
-					crate::serial_println!("locking page {}", j);
 					self.lock_page(j);
 					if first_page == 0
 					{
@@ -146,12 +144,10 @@ impl Allocator
 
 	pub fn print_memusage(&self, level: usize)
 	{
-
-		crate::logln!("[INFO] free mem: {}KiB", self.free_mem / 1024);
-		crate::logln!("[INFO] used mem: {}KiB", self.locked_mem / 1024);
+		crate::log!("[INFO] memory state: free {}KiB - used {}KiB", self.free_mem / 1024, self.locked_mem / 1024);
 		if level >= 1
 		{
-			crate::logln!("[INFO] reserved mem: {}KiB", self.reserved_mem / 1024);
+			crate::log!(" - reserved {}KiB", self.reserved_mem / 1024);
 		}
 		if level >= 2
 		{
@@ -162,6 +158,7 @@ impl Allocator
 		{
 			crate::logln!("excepted levels for print_memusage() are 0, 1 or 2.");
 		}
+		crate::logln!();
 	}
 
 	fn reserve_mem(&mut self, index: usize, len: usize)
@@ -208,7 +205,6 @@ impl Allocator
 	{
 		if self.bitmap[index] == true
 		{
-			crate::logln!("unlocking page {}", index);
 			self.bitmap.set(index, false);
 			self.free_mem += PAGE_SIZE;
 			self.locked_mem -= PAGE_SIZE;
