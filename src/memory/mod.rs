@@ -32,7 +32,6 @@ pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 		{
 			return MEM_SIZE_BYTES as usize;
 		}
-		crate::logln!("\x1B[33mmmap: {:#x?}\x1B[39m", (*mmap).entries(mmap_size));
 		for mmap_entry in (*mmap).entries(mmap_size)
 		{
 			MEM_SIZE_BYTES += mmap_entry.len as u64;

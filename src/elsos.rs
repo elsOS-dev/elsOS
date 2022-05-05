@@ -43,8 +43,8 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
 	{
-		unsafe { crate::memory::init(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES); }
 		init_serial();
+		init_memory();
 		logln!("\n");
 		logln!("        :::      ::::::::    __       __       __ _  ____  ____  ");
 		logln!("      :+:      :+:    :+:  .'  `'._.'`  '.    (  / )(  __)/ ___) ");
@@ -66,7 +66,16 @@ fn init_vga()
 
 fn init_serial()
 {
-	crate::println!("[{}] init serial", ok_fail(serial::init(serial::COM1)));
+	crate::println!("[{}] initialized serial", ok_fail(serial::init(serial::COM1)));
+}
+
+fn init_memory()
+{
+	unsafe
+	{
+		crate::memory::init(MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES);
+		crate::println!("[{}] initilized memory", ok_fail(true));
+	}
 }
 
 pub fn ok_fail(value: bool) -> &'static str
