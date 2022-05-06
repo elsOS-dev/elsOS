@@ -168,15 +168,18 @@ fn free(address: *mut c_void, kernel_space: bool)
 	{
 		memory::vsize(address)
 	};
-	if kernel_space
+	if size > 0
 	{
-		memory::kfree(address);
+		if kernel_space
+		{
+			memory::kfree(address);
+		}
+		else
+		{
+			memory::vfree(address);
+		}
+		crate::logln!("freeed {} ({:#0x}) bytes at {:#08x}", size, size, address as usize);
 	}
-	else
-	{
-		memory::vfree(address);
-	}
-	crate::logln!("freeed {} ({:#0x}) bytes at {:#08x}", size, size, address as usize);
 }
 
 fn print_stack()
