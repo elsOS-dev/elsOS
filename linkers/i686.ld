@@ -10,7 +10,7 @@ SECTIONS
     }
     .text ALIGN(4K) :
     {
-        *(.text)
+        *(.text) *(.text.*)
     }
     /* Read-only data. */
     .rodata ALIGN(4K) :
