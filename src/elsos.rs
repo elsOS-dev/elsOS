@@ -54,9 +54,15 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
 		logln!();
+		tests();
 		tty::prompt();
 		keyboard::get_scancodes();
 	}
+}
+
+fn tests()
+{
+	// put tests here
 }
 
 fn init_vga()
