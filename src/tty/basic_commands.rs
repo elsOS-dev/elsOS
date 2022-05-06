@@ -125,8 +125,11 @@ fn print_var(address: *const u8, kernel_space: bool)
 		{
 			memory::vsize(address as *mut c_void)
 		};
-		let address = (address as usize - 0x10) as *const u8;
-		ferramenta::print_memory(address, size);
+		if size > 0
+		{
+			let address = (address as usize - 0x10) as *const u8;
+			ferramenta::print_memory(address, size);
+		}
 	}
 }
 
