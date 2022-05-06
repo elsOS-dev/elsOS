@@ -152,7 +152,7 @@ fn next_available_space(address: usize, size: usize, memory_space: MemorySpace) 
 
 	loop
 	{
-		if memory_space == MemorySpace::Kernel && start + total_size > limit
+		if memory_space == MemorySpace::Kernel && (start + total_size > limit || address + start + total_size > super::KERNEL_SPACE_START * PAGE_SIZE + super::KERNEL_SPACE_RANGE * PAGE_SIZE)
 		{
 			return 0;
 		}
