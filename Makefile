@@ -63,7 +63,7 @@ $(LIBC_A): $(LIBC_OBJ)
 	$(AR) $(ARFLAGS) $@ $(LIBC_OBJ)
 
 $(KERNEL): $(ASM_OBJ) $(RUST_KERNEL) $(LD_SCRIPT)
-	$(LD) -n --gc-sections -T $(LD_SCRIPT) -o $(KERNEL) $(ASM_OBJ) $(RUST_KERNEL)
+	$(LD) -n --no-gc-sections -T $(LD_SCRIPT) -o $(KERNEL) $(ASM_OBJ) $(RUST_KERNEL)
 
 $(RUST_KERNEL): libc
 	cargo +nightly build --target $(TARGET).json
