@@ -289,7 +289,15 @@ fn get_header_for(address: *mut c_void, memory_space: MemorySpace) -> Option<&'s
 	}
 	unsafe
 	{
-		Some(&mut *((address as usize - core::mem::size_of::<AllocHeader>()) as *mut _))
+		let header: &'static mut AllocHeader = &mut *((address as usize - core::mem::size_of::<AllocHeader>()) as *mut _);
+		if header.magic == 0x4242
+		{
+			Some(header)
+		}
+		else
+		{
+			None
+		}
 	}
 }
 
