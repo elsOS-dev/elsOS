@@ -253,7 +253,15 @@ fn size_of(address: *mut c_void, memory_space: MemorySpace) -> usize
 {
 	if let Some(header) = get_header_for(address, memory_space)
 	{
-		header.size
+		if header.freed
+		{
+			crate::oops!("cannot get size of freed variable");
+			0
+		}
+		else
+		{
+			header.size
+		}
 	}
 	else
 	{
