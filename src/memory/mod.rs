@@ -36,9 +36,15 @@ pub fn get_mem_size(mmap: *const MultibootTagMmap, mmap_size: usize) -> usize
 		{
 			MEM_SIZE_BYTES += mmap_entry.len as u64;
 		}
+		let installed = (MEM_SIZE_BYTES / 1024) / 1024;
+		let mini = KERNEL_SPACE_RANGE * PAGE_SIZE + 0x100000;
 		if MEM_SIZE_BYTES > usize::MAX as u64
 		{
-			panic!("This version of elsOS is in 32 bit, it only supports {}MiB of RAM, you have {}MiB installed", (usize::MAX / 1024) / 1024, (MEM_SIZE_BYTES / 1024) / 1024);
+			panic!("This version of elsOS is in 32 bit, it only supports {}MiB of RAM,\nyou have {}MiB installed", (usize::MAX / 1024) / 1024, installed);
+		}
+		else if MEM_SIZE_BYTES < mini as u64
+		{
+			panic!("This version of elsOS needs at least {}MiB of RAM,\nyou have {}MiB installed", mini / 1024 / 1024, installed);
 		}
 		return MEM_SIZE_BYTES as usize;
 	}
