@@ -156,14 +156,13 @@ fn next_available_space(address: usize, size: usize, memory_space: MemorySpace) 
 		{
 			return 0;
 		}
-		else
+		else if !expand_heap_if_needed(start, total_size, limit)
 		{
-			expand_heap_if_needed(start, total_size, limit);
+			return 0;
 		}
 		unsafe
 		{
 			let header: *mut AllocHeader = (address + start) as *mut _;
-
 			if (*header).magic == 0x4242
 			{
 				if (*header).freed
@@ -183,7 +182,7 @@ fn next_available_space(address: usize, size: usize, memory_space: MemorySpace) 
 	}
 }
 
-fn expand_heap_if_needed(start: usize, size: usize, heap_size: usize)
+fn expand_heap_if_needed(start: usize, size: usize, heap_size: usize) -> bool
 {
 	let mut heap_size = heap_size;
 	let pt_manager: &mut pagetable::Manager = unsafe
@@ -200,9 +199,10 @@ fn expand_heap_if_needed(start: usize, size: usize, heap_size: usize)
 		}
 		else
 		{
-			return;
+			return false;
 		}
 	}
+	true
 }
 
 fn use_freed_block(address: usize, size: usize, memory_space: MemorySpace) -> bool
