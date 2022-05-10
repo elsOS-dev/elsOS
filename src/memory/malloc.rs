@@ -217,16 +217,16 @@ fn use_freed_block(address: usize, size: usize, memory_space: MemorySpace) -> bo
 			let new_address = address + core::mem::size_of::<AllocHeader>();
 			let could_break = break_block(new_address as *mut c_void, size, memory_space);
 
-			if could_break
-			{
-				return true;
-			}
+			could_break
 		}
 		else if (*header).size == size
 		{
-			return true;
+			true
 		}
-		false
+		else
+		{
+			false
+		}
 	}
 }
 
