@@ -1,5 +1,6 @@
 use core::slice;
 use core::arch::asm;
+use crate::memory;
 
 pub fn shutdown_qemu()
 {
@@ -68,6 +69,11 @@ pub unsafe fn print_memory(ptr: *const u8, n: usize)
 {
 	let mut i: usize = 0;
 
+	if !memory::is_range_mapped(ptr, n)
+	{
+		crate::oops!("cannot print unmapped memory from {:#08x} to {:#08x}", ptr as usize, ptr as usize + n);
+		return;
+	}
 	while i < n
 	{
 		if i % 16 == 0
@@ -99,6 +105,11 @@ pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
 {
 	let mut i: usize = 0;
 
+	if !memory::is_range_mapped(ptr, n)
+	{
+		crate::oops!("cannot print unmapped memory from {:#08x} to {:#08x}", ptr as usize, ptr as usize + n);
+		return;
+	}
 	while i < n
 	{
 		if i % 4 == 0
