@@ -116,3 +116,19 @@ pub fn page_map_indexer(v_addr: usize) -> (usize, usize)
 
 	return (pdindex, ptindex);
 }
+
+pub fn is_range_mapped(ptr: *const u8, n: usize) -> bool
+{
+	let pt_manager = unsafe
+	{
+		&PT_MANAGER
+	};
+	if ptr as usize >= pt_manager.last_mapped + PAGE_SIZE || ptr as usize + n > pt_manager.last_mapped + PAGE_SIZE
+	{
+		false
+	}
+	else
+	{
+		true
+	}
+}
