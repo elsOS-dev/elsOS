@@ -186,7 +186,7 @@ fn parse_args(args: &[u8])
 		{
 			let arg = core::str::from_utf8(&args[previous_index..i]).unwrap_or_else(|_| { "" });
 
-			logln!("[INFO] paring arg {}", arg);
+			logln!("[INFO] parsing arg {}", arg);
 
 			match arg
 			{
