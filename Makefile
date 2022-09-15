@@ -55,7 +55,7 @@ $(ISO): $(KERNEL)
 	mkdir -p build/iso/boot/grub
 	cp $(KERNEL) build/iso/boot/elsos.bin
 	cp $(GRUB_CFG) build/iso/boot/grub
-	grub-mkrescue -o $(ISO) build/iso 2> /dev/null
+	i386-pc-grub-mkrescue -o $(ISO) build/iso 2> /dev/null
 	rm -r build/iso
 
 libc: $(LIBC_A)
