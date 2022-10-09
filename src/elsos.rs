@@ -38,7 +38,7 @@ pub static mut SETTINGS: Settings = Settings
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
-	gdt::init_gdt();
+	gdt::init();
 	init_vga();
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
