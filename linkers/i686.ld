@@ -2,6 +2,11 @@ ENTRY(_start)
 
 SECTIONS
 {
+    . = 0x800;
+    .gdt :
+    {
+        KEEP(*(.gdt))
+    }
     . = 0x100000;
     _kernel_start = .;
     .boot ALIGN(4K) :
