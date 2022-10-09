@@ -5,3 +5,5 @@ build
 target
 grub/grub.cfg
 .gdb_history
+
+.DS_Store
