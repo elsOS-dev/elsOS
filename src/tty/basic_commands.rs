@@ -21,6 +21,7 @@ pub fn execute(command: &str)
 		"yesss" => yesss(),
 		"panic" => panic(),
 		"rand" => rand(),
+		"elsass" => crate::elsass::flag(),
 		"" => {},
 		_ =>
 		{
