@@ -14,6 +14,7 @@ use crate::multiboot::{MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES};
 use alloc::string::String;
 
 mod arch;
+mod elsass;
 mod ferramenta;
 mod keyboard;
 mod libc;
