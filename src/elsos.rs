@@ -8,13 +8,13 @@
 use core::panic::PanicInfo;
 use crate::multiboot::{MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES};
 
+mod arch;
 mod ferramenta;
 mod vga;
 mod keyboard;
 mod tty;
 mod multiboot;
 mod serial;
-mod gdt;
 mod memory;
 mod libc;
 
@@ -38,7 +38,7 @@ pub static mut SETTINGS: Settings = Settings
 #[no_mangle]
 pub extern "C" fn kernel_main(magic: u32, address: u32)
 {
-	gdt::init();
+	arch::initial::init();
 	init_vga();
 	vga::cursor::Cursor::init(0, 15);
 	if multiboot::check_magic(magic) && multiboot::parse(address)
