@@ -49,6 +49,7 @@ isr_error    30
 isr_no_error 31
 
 isr_no_error 32
+isr_no_error 33
 
 isr_common:
 	cli
@@ -91,7 +92,7 @@ isr_common:
 global _isr_table
 _isr_table:
 %assign i 0
-%rep 33
+%rep 34
 	dd isr%+i
 %assign i i+1
 %endrep

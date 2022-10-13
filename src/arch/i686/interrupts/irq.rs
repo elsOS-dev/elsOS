@@ -9,9 +9,10 @@ pub struct IRQ
 	pub handler: unsafe fn(&State)
 }
 
-pub static IRQS: [IRQ; 1] =
+pub static IRQS: [IRQ; 2] =
 [
-	IRQ {message: "Programmable Interrupt Timer Interrupt", handler: pit_interrupt}
+	IRQ {message: "Programmable Interrupt Timer Interrupt", handler: pit_interrupt},
+	IRQ {message: "Keyboard Interrupt", handler: keyboard_interrupt}
 ];
 
 pub unsafe fn handler(state: &State)
@@ -23,4 +24,9 @@ pub unsafe fn handler(state: &State)
 unsafe fn pit_interrupt(_state: &State)
 {
 	crate::time::JIFFIES += 1;
+}
+
+unsafe fn keyboard_interrupt(_state: &State)
+{
+	crate::keyboard::get_scancode();
 }
