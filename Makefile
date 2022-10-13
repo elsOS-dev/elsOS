@@ -50,7 +50,8 @@ rundd: $(ISO)
 
 iso: $(ISO)
 
-$(ISO): $(KERNEL) $(GRUB_CFG)
+$(ISO): $(KERNEL)
+	bash grub/generate.sh
 	mkdir -p build/iso/boot/grub
 	cp $(KERNEL) build/iso/boot/elsos.bin
 	cp $(GRUB_CFG) build/iso/boot/grub
@@ -89,3 +90,7 @@ mrproper: clean
 
 re: mrproper
 	make all
+
+reiso:
+	rm $(ISO)
+	make iso
