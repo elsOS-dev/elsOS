@@ -77,18 +77,18 @@ static mut DESCRIPTOR: descriptor = descriptor
 	base: 0
 };
 
-static mut IDT: [gate; 32] = [gate
+static mut IDT: [gate; 33] = [gate
 {
 	isr_low: 0,
 	segment: 0,
 	reserved: 0,
 	flags: 0,
 	isr_high: 0
-}; 32];
+}; 33];
 
 extern "C"
 {
-	static mut _isr_table: [u32; 32];
+	static mut _isr_table: [u32; 33];
 }
 
 pub unsafe fn init()

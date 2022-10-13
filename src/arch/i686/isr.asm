@@ -48,6 +48,8 @@ isr_no_error 29
 isr_error    30
 isr_no_error 31
 
+isr_no_error 32
+
 isr_common:
 	cli
 	; push eax, ecx, edx, ebx, esi, edi
@@ -89,7 +91,7 @@ isr_common:
 global _isr_table
 _isr_table:
 %assign i 0
-%rep 32
+%rep 33
 	dd isr%+i
 %assign i i+1
 %endrep

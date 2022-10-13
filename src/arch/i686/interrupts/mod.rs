@@ -2,6 +2,7 @@ use crate::arch::i686::instructions;
 
 mod exceptions;
 pub mod idt;
+mod irq;
 mod pic;
 
 #[inline(always)]
@@ -80,6 +81,10 @@ pub unsafe extern "C" fn interrupt_handler(state: &State)
 		{
 			exceptions::handler(state);
 		},
+		0x20 =>
+		{
+			irq::handler(state);
+		}
 		_ =>
 		{
 			state.save();

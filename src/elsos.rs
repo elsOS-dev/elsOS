@@ -17,6 +17,7 @@ mod multiboot;
 mod serial;
 mod memory;
 mod libc;
+mod time;
 
 static VERSION: &str = env!("VERSION");
 static PATCHLEVEL: &str = env!("PATCHLEVEL");
