@@ -56,7 +56,12 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!();
 		tests();
 		tty::prompt();
-		keyboard::get_scancodes();
+		unsafe
+		{
+			arch::interrupts::init();
+			arch::interrupts::enable();
+		}
+		loop {}
 	}
 }
 
@@ -93,20 +98,45 @@ pub fn ok_fail(value: bool) -> &'static str
 	}
 }
 
+static mut INTERRUPT_STATE: arch::interrupts::State = arch::interrupts::State
+{
+	eax: 0,
+	ebx: 0,
+	ecx: 0,
+	edx: 0,
+
+	esi: 0,
+	edi: 0,
+	esp: 0,
+	ebp: 0,
+
+	cs: 0,
+	ds: 0,
+
+	interrupt: 0,
+	error: 0,
+
+	eip: 0,
+	eflags: 0,
+};
+
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !
 {
 	vga::panic();
 	logln!("\n\x1B[31;49m{}\x1B[39;49m\n", info);
 
-	print_memory_state(false);
+	print_panic_state(false);
 
 	logln!("");
 	loop {}
 }
 
-fn print_memory_state(serial_only: bool)
+fn print_panic_state(serial_only: bool)
 {
+	let eip: u32;
+	let eflags: u32;
+
 	let eax: u32;
 	let ebx: u32;
 	let ecx: u32;
@@ -117,26 +147,38 @@ fn print_memory_state(serial_only: bool)
 	let esp: u32;
 	let ebp: u32;
 
+	let cs: u32;
+	let ds: u32;
+
 	unsafe
 	{
-		eax = crate::get_reg!("eax");
-		ebx = crate::get_reg!("ebx");
-		ecx = crate::get_reg!("ecx");
-		edx = crate::get_reg!("edx");
+		eip = INTERRUPT_STATE.eip;
+		eflags = INTERRUPT_STATE.eflags;
+		eax = INTERRUPT_STATE.eax;
+		ebx = INTERRUPT_STATE.ebx;
+		ecx = INTERRUPT_STATE.ecx;
+		edx = INTERRUPT_STATE.edx;
 
-		esi = crate::get_reg!("esi");
-		edi = crate::get_reg!("edi");
-		esp = crate::get_reg!("esp");
-		ebp = crate::get_reg!("ebp");
+		esi = INTERRUPT_STATE.esi;
+		edi = INTERRUPT_STATE.edi;
+		esp = INTERRUPT_STATE.esp;
+		ebp = INTERRUPT_STATE.ebp;
+
+		cs = INTERRUPT_STATE.cs;
+		ds = INTERRUPT_STATE.ds;
 	}
 
 	if !serial_only
 	{
+		crate::vga_println!("eip: {:08x}   eflags: {:08x}", eip, eflags);
 		crate::vga_println!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
 		crate::vga_println!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
+		crate::vga_println!(" cs:     {:04x}    ds:     {:04x}", cs, ds);
 	}
+	crate::serial_println!("eip: {:08x}   eflags: {:08x}", eip, eflags);
 	crate::serial_println!("eax: {:08x}   ebx: {:08x}   ecx: {:08x}   edx: {:08x}", eax, ebx, ecx, edx);
 	crate::serial_println!("esi: {:08x}   edi: {:08x}   esp: {:08x}   ebp: {:08x}", esi, edi, esp, ebp);
+	crate::serial_println!(" cs:     {:04x}    ds:     {:04x}", cs, ds);
 
 	if !serial_only
 	{
@@ -162,6 +204,7 @@ fn print_memory_state(serial_only: bool)
 			}
 		}
 	}
+	log!("\n\nALLES KAPUT !!!");
 }
 
 #[macro_export]
@@ -170,7 +213,6 @@ macro_rules! oops
 	($($arg:tt)*) =>
 	{
 		$crate::logln!("\x1B[33;49moops at '{}', {}:{}:{}\x1B[39;49m\n", format_args!($($arg)*), file!(), line!(), column!());
-		$crate::print_memory_state(true);
 		$crate::serial_println!("");
 	}
 }
