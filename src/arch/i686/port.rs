@@ -59,3 +59,9 @@ pub fn outd(port: u16, value: u32)
 		asm!("out dx, eax", in("dx") port, in("eax") value, options(nomem, nostack, preserves_flags));
 	}
 }
+
+#[inline(always)]
+pub fn io_wait()
+{
+	outb(0x80, 0);
+}
