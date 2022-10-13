@@ -49,37 +49,27 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 	}
 }
 
-pub fn get_scancodes()
+pub fn get_scancode()
 {
-	let mut scancode: u8 = 0;
-	loop
-    {
-		let new_scancode = arch::port::inb(KEYBOARD_DATA);
+	let scancode = arch::port::inb(KEYBOARD_DATA);
 
-		if new_scancode == scancode
+	unsafe
+	{
+		match scancode
 		{
-			continue;
-		}
-		scancode = new_scancode;
-
-		unsafe
-		{
-			match scancode
-			{
-				0x2A => KEYBOARD_STATE.shift = true,
-				0xAA => KEYBOARD_STATE.shift = false,
-				0x1D => KEYBOARD_STATE.ctrl = true,
-				0x9D => KEYBOARD_STATE.ctrl = false,
-				_ => {
-					tty::input(&KeyboardInput {
-						state: KeyboardState {
-							shift: KEYBOARD_STATE.shift,
-							ctrl: KEYBOARD_STATE.ctrl
-						},
-						scancode,
-					});
-				}
-			};
-		}
+			0x2A => KEYBOARD_STATE.shift = true,
+			0xAA => KEYBOARD_STATE.shift = false,
+			0x1D => KEYBOARD_STATE.ctrl = true,
+			0x9D => KEYBOARD_STATE.ctrl = false,
+			_ => {
+				tty::input(&KeyboardInput {
+					state: KeyboardState {
+						shift: KEYBOARD_STATE.shift,
+						ctrl: KEYBOARD_STATE.ctrl
+					},
+					scancode,
+				});
+			}
+		};
 	}
 }
