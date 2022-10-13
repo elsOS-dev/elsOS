@@ -2,12 +2,14 @@ use crate::arch::i686::instructions;
 
 mod exceptions;
 pub mod idt;
+mod pic;
 
 #[inline(always)]
 pub unsafe fn init()
 {
 	idt::init();
 	idt::load();
+	pic::init();
 }
 
 #[inline(always)]
