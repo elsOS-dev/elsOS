@@ -10,6 +10,7 @@ section .text
 global _start:function (_start.end - _start)
 bits 32
 _start:
+	cli
 	mov esp, stack_top
 	xor ebp, ebp
 
