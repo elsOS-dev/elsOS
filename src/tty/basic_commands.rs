@@ -17,6 +17,7 @@ pub fn execute(command: &str)
 		"pb" => printmem_at(0 as *const u8, true),
 		"ps" => print_stack(),
 		"pt" => printtty(),
+		"jiffies" => jiffies(),
 		"yesss" => yesss(),
 		"panic" => panic(),
 		"" => {},
@@ -194,6 +195,14 @@ fn print_stack()
 fn panic()
 {
 	panic!("panic()");
+}
+
+fn jiffies()
+{
+	unsafe
+	{
+		crate::logln!("jiffies = {}", crate::time::JIFFIES);
+	}
 }
 
 fn yesss()
