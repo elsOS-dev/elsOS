@@ -1,8 +1,8 @@
-use crate::ferramenta::{inb, outb};
+use crate::arch::port::{inb, outb};
 use crate::vga::BUFFER_WIDTH;
 
-const CRT_ADDR_REG: u32 = 0x3D4;
-const CRT_DATA_REG: u32 = 0x3D5;
+const CRT_ADDR_REG: u16 = 0x3D4;
+const CRT_DATA_REG: u16 = 0x3D5;
 
 const CURSOR_START_REG: u8 = 0x0A;
 const CURSOR_END_REG: u8 = 0x0B;

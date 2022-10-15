@@ -1,5 +1,5 @@
 use core::fmt;
-use crate::ferramenta::{inb, outb};
+use crate::arch::port::{inb, outb};
 
 #[macro_export]
 macro_rules! serial_print
@@ -14,15 +14,15 @@ macro_rules! serial_println
 	($($arg:tt)*) => ($crate::serial_print!("{}\n", format_args!($($arg)*)));
 }
 
-pub const COM1: u32 = 0x3f8;
+pub const COM1: u16 = 0x3f8;
 
-fn check_serial_chip(port: u32) -> bool
+fn check_serial_chip(port: u16) -> bool
 {
 	outb(port, 0xAE);
 	inb(port) == 0xAE
 }
 
-pub fn init(port: u32) -> bool
+pub fn init(port: u16) -> bool
 {
 	unsafe
 	{
@@ -50,18 +50,18 @@ pub fn init(port: u32) -> bool
 	return true;
 }
 
-fn is_transmit_empty(port: u32) -> u8 {
+fn is_transmit_empty(port: u16) -> u8 {
 	return inb(port + 5) & 0x20;
 }
 
-pub fn write(a: u8, port: u32) {
+pub fn write(a: u8, port: u16) {
 	while is_transmit_empty(port) == 0 { }
 	outb(port, a);
 }
 
 struct Serial
 {
-	port: u32,
+	port: u16,
 	pos_x: usize
 }
 
