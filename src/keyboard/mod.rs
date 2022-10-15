@@ -1,10 +1,10 @@
-use crate::ferramenta;
+use crate::arch;
 use crate::tty;
 
 mod azerty;
 mod qwerty;
 
-const KEYBOARD_DATA: u32 = 0x60;
+const KEYBOARD_DATA: u16 = 0x60;
 const KEYBOARD_READ_STATUS: u32 = 0x64;
 const KEYBOARD_WRITE_COMMAND: u32 = 0x64;
 
@@ -54,7 +54,7 @@ pub fn get_scancodes()
 	let mut scancode: u8 = 0;
 	loop
     {
-		let new_scancode = ferramenta::inb(KEYBOARD_DATA);
+		let new_scancode = arch::port::inb(KEYBOARD_DATA);
 
 		if new_scancode == scancode
 		{
