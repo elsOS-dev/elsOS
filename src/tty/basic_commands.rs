@@ -1,5 +1,5 @@
-use core::arch::asm;
 use core::ffi::c_void;
+use crate::arch;
 use crate::ferramenta;
 use crate::memory;
 use crate::vga;
@@ -73,15 +73,16 @@ fn halt()
 	ferramenta::shutdown_qemu();
 }
 
+// use the 8042 keyboard controller to pulse the reset pin of the CPU
 fn reboot()
 {
-	// jump to the post procedure to reboot
-	unsafe
+	let mut good: u8 = 0x02;
+	while good & 0x02 != 0
 	{
-		asm!("push 0FFFFh");
-		asm!("push 0000h");
-		asm!("retf");
+		good = arch::port::inb(0x64);
 	}
+	arch::port::outb(0x64, 0xFE);
+	arch::halt();
 }
 
 fn scheen()
