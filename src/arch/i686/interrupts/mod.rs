@@ -4,6 +4,7 @@ mod exceptions;
 pub mod idt;
 mod irq;
 mod pic;
+mod software;
 
 #[inline(always)]
 pub unsafe fn init()
@@ -85,6 +86,10 @@ pub unsafe extern "C" fn interrupt_handler(state: &State)
 		0x20..=0x2f =>
 		{
 			irq::handler(state);
+		}
+		0x80 =>
+		{
+			software::handler(state);
 		}
 		_ =>
 		{
