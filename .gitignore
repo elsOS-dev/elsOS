@@ -4,3 +4,4 @@
 build
 target
 grub/grub.cfg
+.gdb_history
