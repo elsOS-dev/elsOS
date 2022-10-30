@@ -10,6 +10,7 @@ pub fn init()
 	gdt::init();
 }
 
+#[inline(always)]
 pub fn halt()
 {
 	unsafe
