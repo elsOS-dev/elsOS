@@ -102,7 +102,15 @@ macro_rules! get_reg
 		core::arch::asm!(concat!("mov {}, ", $reg), out(reg) val);
 		val
 	}}
+}
 
+#[macro_export]
+macro_rules! clear_reg
+{
+	($reg:expr) =>
+	{{
+		core::arch::asm!(concat!("xor ", $reg, ", ", $reg));
+	}}
 }
 
 #[macro_export]
