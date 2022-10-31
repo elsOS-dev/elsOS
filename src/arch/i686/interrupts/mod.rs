@@ -75,20 +75,20 @@ impl State
 #[no_mangle]
 pub unsafe extern "C" fn interrupt_handler(state: &State)
 {
-	match state.interrupt
+	let interrupt = state.interrupt;
+	match interrupt
 	{
 		0x00..=0x1f =>
 		{
 			exceptions::handler(state);
 		},
-		0x20..=0x21 =>
+		0x20..=0x2f =>
 		{
 			irq::handler(state);
 		}
 		_ =>
 		{
-			state.save();
-			panic!();
+			crate::serial_println!("Got unhandled interrupt {:02x}", interrupt);
 		}
 	};
 }
