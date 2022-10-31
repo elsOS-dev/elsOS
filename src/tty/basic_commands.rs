@@ -59,6 +59,10 @@ pub fn execute(command: &str)
 							int(n as u8);
 						}
 					},
+					"loadkeys" =>
+					{
+						loadkeys(arg);
+					},
 					_ => crate::println!("{}: unknown or invalid command. Use help for more", command)
 				}
 			}
@@ -190,6 +194,19 @@ fn free(address: *mut c_void, kernel_space: bool)
 			memory::vfree(address);
 		}
 		crate::logln!("freeed {} ({:#0x}) bytes at {:#08x}", size, size, address as usize);
+	}
+}
+
+fn loadkeys(layout: &str)
+{
+	unsafe
+	{
+		match layout
+		{
+			"us" => { crate::SETTINGS.layout = 1 },
+			"fr" => { crate::SETTINGS.layout = 0 },
+			_ => { crate::SETTINGS.layout = 0 }
+		};
 	}
 }
 
