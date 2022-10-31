@@ -133,6 +133,18 @@ fn panic(info: &PanicInfo) -> !
 	print_panic_state(false);
 
 	logln!("");
+	unsafe
+	{
+		clear_reg!("eax");
+		clear_reg!("ebx");
+		clear_reg!("ecx");
+		clear_reg!("edx");
+
+		clear_reg!("esi");
+		clear_reg!("edi");
+		clear_reg!("esp");
+		clear_reg!("ebp");
+	}
 	loop {}
 }
 
