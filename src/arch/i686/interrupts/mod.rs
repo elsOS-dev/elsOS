@@ -87,7 +87,7 @@ pub unsafe extern "C" fn interrupt_handler(state: &State)
 		{
 			irq::handler(state);
 		}
-		0x80 =>
+		0x30 | 0x80 =>
 		{
 			software::handler(state);
 		}
