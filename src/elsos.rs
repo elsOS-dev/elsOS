@@ -55,13 +55,13 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		logln!("     #+#    #+#             :` .'._.'. `;    Willkumme uf elsOS {}.{}.{}{}", VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION);
 		logln!("    ###   #########         '-`'.___.'`-'   Hello, kernel world !");
 		logln!();
-		tests();
 		tty::prompt();
 		unsafe
 		{
 			arch::interrupts::init();
 			arch::interrupts::enable();
 		}
+		tests();
 		loop
 		{
 			arch::halt();
@@ -72,6 +72,12 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 fn tests()
 {
 	// put tests here
+	unsafe
+	{
+		let text = [b'H', b'e', b'l', b'l', b'o', b'\n'];
+		let len = 6;
+		ferramenta::syscall(1, 0, &text as *const _ as u32, len);
+	}
 }
 
 fn init_vga()
