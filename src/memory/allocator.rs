@@ -8,9 +8,9 @@ unsafe impl GlobalAlloc for Allocator
 {
     unsafe fn alloc(&self, _layout: Layout) -> *mut u8
 	{
-		crate::serial_println!("trying to allocate {} ({:#x}) bytes...", _layout.size(), _layout.size());
+		//crate::serial_println!("trying to allocate {} ({:#x}) bytes...", _layout.size(), _layout.size());
         let address = vmalloc(_layout.size());
-		crate::serial_println!("allocated {} bytes at {:p}", _layout.size(), address);
+		//crate::serial_println!("allocated {} bytes at {:p}", _layout.size(), address);
 		address as *mut u8
     }
 
@@ -21,7 +21,7 @@ unsafe impl GlobalAlloc for Allocator
 
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout)
 	{
-		crate::serial_println!("deallocating {:p}", _ptr);
+		//crate::serial_println!("deallocating {:p}", _ptr);
 		vfree(_ptr as *mut c_void);
     }
 }
