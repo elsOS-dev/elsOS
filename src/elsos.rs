@@ -21,6 +21,7 @@ mod serial;
 mod memory;
 mod libc;
 mod time;
+mod syscall;
 
 static VERSION: &str = env!("VERSION");
 static PATCHLEVEL: &str = env!("PATCHLEVEL");
@@ -77,9 +78,10 @@ fn tests()
 	// put tests here
 	unsafe
 	{
-		let text = [b'H', b'e', b'l', b'l', b'o', b'\n'];
-		let len = 6;
-		ferramenta::syscall(1, 0, &text as *const _ as u32, len);
+		let text = [b'H', b'e', b'l', b'l', b'o'];
+		let len = 5;
+		syscall::write(0, text.as_ptr() as u32, len);
+		vga_println!();
 	}
 }
 
