@@ -1,5 +1,7 @@
 use crate::memory;
 
+use alloc::string::String;
+
 use core::slice;
 
 pub fn shutdown_qemu()
@@ -92,6 +94,26 @@ pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
 		}
 	}
 	crate::logln!();
+}
+
+fn get_line() -> String
+{
+	let mut line = String::new();
+	let mut buf = [b'\0'];
+
+	while buf[0] != b'\n'
+	{
+		unsafe
+		{
+			while syscall::read(0, buf.as_mut_ptr() as u32, 1) == 0 {}
+		}
+		if buf[0] != b'\n'
+		{
+			line.push(buf[0] as char);
+		}
+	}
+
+	line
 }
 
 #[macro_export]
