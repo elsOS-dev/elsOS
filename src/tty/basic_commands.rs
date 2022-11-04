@@ -63,6 +63,13 @@ pub fn execute(command: &str)
 					{
 						loadkeys(arg);
 					},
+					"str" =>
+					{
+						let a = alloc::string::String::from(arg);
+						crate::logln!("Allocated String containing \"{}\"", a);
+						crate::logln!(" heap content address {:p}", a.as_ptr());
+						crate::logln!("stack pointer address {:p}", &a);
+					},
 					_ => crate::println!("{}: unknown or invalid command. Use help for more", command)
 				}
 			}
