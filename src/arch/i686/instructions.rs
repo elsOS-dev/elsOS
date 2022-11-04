@@ -12,3 +12,9 @@ pub unsafe fn sti()
 {
 	asm!("sti");
 }
+
+#[inline(always)]
+pub unsafe fn cli()
+{
+	asm!("cli");
+}
