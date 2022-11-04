@@ -68,7 +68,7 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 			arch::interrupts::init();
 			arch::interrupts::enable();
 		}
-		tests();
+		//tests();
 		loop
 		{
 			arch::halt();
