@@ -83,8 +83,11 @@ fn tests()
 	vga_println!("got line \"{}\"", ferramenta::get_line());
 	unsafe
 	{
-		let text = [b'H', b'e', b'l', b'l', b'o'];
+		let mut text = [b'H', b'e', b'l', b'l', b'o'];
 		let len = 5;
+		syscall::write(0, text.as_ptr() as u32, len);
+		vga_println!();
+		syscall::read(0, text.as_mut_ptr() as u32, len);
 		syscall::write(0, text.as_ptr() as u32, len);
 		vga_println!();
 	}
