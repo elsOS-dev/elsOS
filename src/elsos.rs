@@ -11,6 +11,8 @@ extern crate alloc;
 use core::panic::PanicInfo;
 use crate::multiboot::{MULTIBOOT_MMAP, MULTIBOOT_MMAP_ENTRIES};
 
+use alloc::string::String;
+
 mod arch;
 mod ferramenta;
 mod vga;
@@ -62,6 +64,7 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 		tty::prompt();
 		unsafe
 		{
+			keyboard::BUFFER.as_mut_ptr().write(String::new());
 			arch::interrupts::init();
 			arch::interrupts::enable();
 		}
