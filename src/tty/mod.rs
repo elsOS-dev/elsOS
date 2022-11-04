@@ -154,6 +154,11 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 {
 	if let Some(key) = keyboard::char_from_input(keyboard_input)
 	{
+		if key == '\n'
+		{
+			line_return(true);
+			return;
+		}
 		if keyboard_input.state.ctrl
 		{
 			match key
@@ -195,7 +200,6 @@ pub fn input(keyboard_input: &keyboard::KeyboardInput)
 		match keyboard_input.scancode
 		{
 			0x0e => backspace(),
-			0x1C => line_return(true),
 			0x4B => cursor_left(),
 			0x4D => cursor_right(),
 			0x48 => cursor_up(),
