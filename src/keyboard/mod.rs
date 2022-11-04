@@ -1,6 +1,9 @@
 use crate::arch;
 use crate::tty;
 
+use core::mem::MaybeUninit;
+use alloc::string::String;
+
 mod azerty;
 mod qwerty;
 
@@ -34,18 +37,27 @@ static mut KEYBOARD_STATE: KeyboardState = KeyboardState
     ctrl: false,
 };
 
+
+pub static mut BUFFER: MaybeUninit<String> = MaybeUninit::uninit();
+
 pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 {
 	unsafe
 	{
-		if crate::SETTINGS.layout == 1
+		let c = if crate::SETTINGS.layout == 1
 		{
 			qwerty::char_from_input(keyboard_input)
 		}
 		else
 		{
 			azerty::char_from_input(keyboard_input)
+		};
+		if let Some(key) = c
+		{
+			let buf = BUFFER.assume_init_mut();
+			buf.push(key);
 		}
+		c
 	}
 }
 

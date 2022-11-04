@@ -58,6 +58,7 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x34 => Some('/'),
 			0x35 => Some('+'),
 			0x39 => Some(' '),
+			0x1C => Some('\n'),
 			_ => None,
 		};
 	}
@@ -113,6 +114,7 @@ pub fn char_from_input(keyboard_input: &KeyboardInput) -> Option<char>
 			0x34 => Some(':'),
 			0x35 => Some('='),
 			0x39 => Some(' '),
+			0x1C => Some('\n'),
 			_ => None,
 		};
 	}
