@@ -277,6 +277,9 @@ isr_no_error 253
 isr_no_error 254
 isr_no_error 255
 
+global retval
+retval: dd 0
+
 isr_common:
 	cli
 	; push eax, ecx, edx, ebx, esi, edi
@@ -298,6 +301,7 @@ isr_common:
 	push esp ; pass the saved args to the function via the old stack pointer
 	extern interrupt_handler
 	call interrupt_handler
+	mov [retval], eax
 	add esp, 4
 
 	pop eax
