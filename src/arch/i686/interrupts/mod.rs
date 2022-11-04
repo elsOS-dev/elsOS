@@ -19,6 +19,11 @@ pub unsafe fn enable()
 {
 	instructions::sti();
 }
+#[inline(always)]
+pub unsafe fn disable()
+{
+	instructions::cli();
+}
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
