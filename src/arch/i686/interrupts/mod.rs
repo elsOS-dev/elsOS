@@ -79,7 +79,7 @@ impl State
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn interrupt_handler(state: &State)
+pub unsafe extern "C" fn interrupt_handler(state: &State) -> usize
 {
 	let interrupt = state.interrupt;
 	match interrupt
@@ -87,18 +87,21 @@ pub unsafe extern "C" fn interrupt_handler(state: &State)
 		0x00..=0x1f =>
 		{
 			exceptions::handler(state);
+			0
 		},
 		0x20..=0x2f =>
 		{
 			irq::handler(state);
+			0
 		}
 		0x30 | 0x80 =>
 		{
-			software::handler(state);
+			software::handler(state)
 		}
 		_ =>
 		{
 			crate::serial_println!("Got unhandled interrupt {:02x}", interrupt);
+			0
 		}
-	};
+	}
 }
