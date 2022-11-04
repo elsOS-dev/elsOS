@@ -79,6 +79,8 @@ pub extern "C" fn kernel_main(magic: u32, address: u32)
 fn tests()
 {
 	// put tests here
+	vga_println!("getting one line...");
+	vga_println!("got line \"{}\"", ferramenta::get_line());
 	unsafe
 	{
 		let text = [b'H', b'e', b'l', b'l', b'o'];

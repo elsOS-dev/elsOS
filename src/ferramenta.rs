@@ -1,4 +1,5 @@
 use crate::memory;
+use crate::syscall;
 
 use alloc::string::String;
 
@@ -96,7 +97,7 @@ pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
 	crate::logln!();
 }
 
-fn get_line() -> String
+pub fn get_line() -> String
 {
 	let mut line = String::new();
 	let mut buf = [b'\0'];
