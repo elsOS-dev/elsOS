@@ -1,7 +1,6 @@
 use crate::memory;
 
 use core::slice;
-use core::arch::asm;
 
 pub fn shutdown_qemu()
 {
@@ -93,18 +92,6 @@ pub unsafe fn print_memory_bin(ptr: *const u8, n: usize)
 		}
 	}
 	crate::logln!();
-}
-
-pub unsafe fn syscall(syscall_number: u32, arg1: u32, arg2: u32, arg3: u32) -> u32
-{
-	let ret: u32;
-	asm!("int 0x80",
-			in("eax") syscall_number,
-			in("ebx") arg1,
-			in("ecx") arg2,
-			in("edx") arg3,
-			lateout("eax") ret);
-	ret
 }
 
 #[macro_export]

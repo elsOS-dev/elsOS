@@ -8,5 +8,6 @@ pub use i686::
 {
 	halt,
 	interrupts,
-	port
+	port,
+	syscall
 };
