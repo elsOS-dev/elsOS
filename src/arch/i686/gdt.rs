@@ -36,6 +36,7 @@ static GDT_DESCRIPTOR: gdt_descriptor = gdt_descriptor
 	base: 0x800
 };
 
+#[used]
 #[link_section = ".gdt"]
 static GDT: gdt = gdt
 {
