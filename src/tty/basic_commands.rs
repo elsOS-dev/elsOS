@@ -20,6 +20,7 @@ pub fn execute(command: &str)
 		"jiffies" => jiffies(),
 		"yesss" => yesss(),
 		"panic" => panic(),
+		"rand" => rand(),
 		"" => {},
 		_ =>
 		{
@@ -501,6 +502,11 @@ fn jiffies()
 	{
 		crate::logln!("jiffies = {}", crate::time::JIFFIES);
 	}
+}
+
+fn rand()
+{
+	crate::logln!("{}", crate::arch::rand());
 }
 
 fn yesss()
