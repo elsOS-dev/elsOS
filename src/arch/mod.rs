@@ -9,5 +9,6 @@ pub use i686::
 	halt,
 	interrupts,
 	port,
+	rand,
 	syscall
 };
